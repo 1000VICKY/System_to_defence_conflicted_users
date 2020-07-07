@@ -11,10 +11,6 @@ class UniqueUser extends Model
     // テーブル名の定義
     protected $table = "unique_users";
 
-    // プライマリキーの定義
-    protected $primaryKey = "id";
-    public $incrementing = true;
-
     // 属性のデフォルト値を指定
     protected $attributes = [
         "is_displayed" => 1,
@@ -35,5 +31,13 @@ class UniqueUser extends Model
         "age",
         "is_displayed",
         "is_deleted",
+        "reception_number",
     ];
+
+
+    // CSVファイルとのリレーション
+    public function logs()
+    {
+        return $this->hasMany(Log::class, "unique_user_id", "id");
+    }
 }

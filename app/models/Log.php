@@ -4,17 +4,10 @@ namespace App\models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class AllEndUser extends Model
+class Log extends Model
 {
     // テーブルの定義
-    protected $table = "all_end_users";
-
-    // プライマリキーはUUIDで定義
-    protected $primaryKey = "uuid";
-    public $incrementing = false;
-    protected $keyType = "string";
-
-
+    protected $table = "logs";
 
     // 属性のデフォルト値
     protected $attributes = [
@@ -24,9 +17,8 @@ class AllEndUser extends Model
     ];
 
     protected $fillable = [
-        "uuid",
-        "reception_date",
         "reception_number",
+        "reception_date",
         "event_name",
         "event_start",
         "family_name",
@@ -42,6 +34,6 @@ class AllEndUser extends Model
         "is_displayed",
         "is_deleted",
         "is_registered",
-        "hash",
+        "unique_user_id",
     ];
 }

@@ -17,11 +17,6 @@ class CreateEventsTable extends Migration
             $table->id();
             $table->string("event_name", 2048);
             $table->dateTime("event_start");
-
-            // イベントへの申し込み開始日時
-            $table->dateTime("reception_start")->nullable();
-            // イベントへの申込み終了日時
-            $table->dateTime("reception_end")->nullable();
             $table->timestamps();
 
             // イベントの開始日時はユニークの前提

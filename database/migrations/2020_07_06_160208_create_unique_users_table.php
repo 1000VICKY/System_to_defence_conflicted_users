@@ -22,16 +22,22 @@ class CreateUniqueUsersTable extends Migration
             $table->string("phone_number", 255);
             $table->string("email", 1024);
             $table->string("job", 255)->nullable();
-            $table->integer("gender");
+            $table->string("gender", 16);
             $table->date("birth_date")->nullable();
             // 年齢と生年月日は別カラムでもつ
             $table->integer("age");
             $table->tinyInteger("is_displayed")->default(1);
             $table->tinyInteger("is_deleted")->default(0);
+
+            // CSVファイルのプライマリキーを保持
+            $table->string("reception_number");
+
             $table->timestamps();
             // ユニークキー
+            $table->unique(["family_name", "given_name"], "family_name_given_name");
             $table->unique("phone_number");
             $table->unique("email");
+            $table->unique("reception_number");
         });
     }
 

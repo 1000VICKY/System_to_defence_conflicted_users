@@ -31,6 +31,9 @@
             <li class="nav-item">
               <a class="nav-link" href="/admin/user/all">全参加者データ</a>
             </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/admin/import">CSVのインポート</a>
+            </li>
           </ul>
         </div>
       </nav>

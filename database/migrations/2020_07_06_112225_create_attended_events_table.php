@@ -18,17 +18,15 @@ class CreateAttendedEventsTable extends Migration
             // 必須カラムイベントID
             $table->bigInteger("event_id");
             // end_user_id
-            $table->bigInteger("end_user_id");
+            $table->bigInteger("unique_user_id");
             // event_formでの受付番号
             $table->string("reception_number", 64);
-            // イベントへの受付日時
-            $table->dateTime("reception_date");
             $table->timestamps();
 
             // 該当するイベントのユニークキー
             $table->unique("reception_number");
             // 複合ユニークキー
-            $table->unique(["event_id", "end_user_id"], "event_id_end_user_id");
+            $table->unique(["event_id", "unique_user_id"], "event_id_end_user_id");
         });
     }
 

@@ -6,8 +6,10 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ImportRequest;
-use App\Models\AllEndUser;
+use App\Models\Log;
 use App\Models\UniqueUser;
+use App\Models\Event;
+use App\Models\AttendedEvent;
 use Illuminate\Support\Str;
 class ImportController extends Controller
 {
@@ -67,20 +69,20 @@ class ImportController extends Controller
                 foreach ($header as $_key => $_value) {
                     $temp[$_value] = $value[$_key];
                 }
-                // 重複を防ぐため、ハッシュ化してユニークキーとする
-                $hash = hash("sha256", json_encode($temp));
-                $temp["hash"] = $hash;
-                $temp["uuid"] = (string)Str::uuid();
-                $result = AllEndUser::where("hash", $hash)->get();
+                // CSVファイルのinsert時に重複を防ぐ
+                $result = Log::where("reception_number", $temp["reception_number"])->get();
+                // 既にinsert済みであればスルーする
                 if ($result->count() !== 0) {
                     continue;
                 }
-                $result = AllEndUser::create($temp);
+                $result = Log::create($temp);
             }
 
             // 全ユーザー情報から未登録のユーザーをユニークユーザーとして登録する
-            $result = AllEndUser::where("is_registered", 0)->get();
+            $result = Log::where("is_registered", 0)->get();
             foreach ($result as $key => $value) {
+
+                // ユニークユーザーの重複チェック
                 $inner_response = UniqueUser::where([
                     ["family_name", "=", $value->family_name],
                     ["given_name", "=", $value->given_name],
@@ -90,13 +92,71 @@ class ImportController extends Controller
                     ["given_name", "=", $value->given_name],
                     ["email", "=", $value->email],
                 ])->get();
-                if ($inner_response->count() !== 0) {
-                    continue;
-                }
-                $temp = UniqueUser::create([
 
+
+                // 戻り値チェック
+                if ($inner_response->count() === 0) {
+                    // 未登録のユニークユーザーのみ
+                    // ユニークユーザーのマスタデータの追加を行う
+                    $temp = UniqueUser::create([
+                        "family_name" => $value->family_name,
+                        "given_name" => $value->given_name,
+                        "family_name_sort" => $value->family_name_sort,
+                        "given_name_sort" => $value->given_name_sort,
+                        "phone_number" => $value->phone_number,
+                        "email" => $value->email,
+                        "job" => $value->job,
+                        "gender" => $value->gender,
+                        "age" => $value->age,
+                        "reception_number" => $value->reception_number,
+                    ]);
+                    // 挿入直後のプライマリキー
+                    $unique_user_id = $temp->id;
+                    // 戻り値チェック
+                    if ($temp === NULL) {
+                        throw new \Exception("新規ユニークユーザーの登録に失敗しました。");
+                    }
+                } else {
+                    $unique_user_id = $inner_response->first()->id;
+                }
+                // イベントの重複チェック
+                $result = Event::where("event_start", $value->event_start)->get();
+                    if ($result->count() === 0) {
+                    // 未登録のイベントのみ追加する
+                    $temp = Event::create([
+                        "event_name" => $value->event_name,
+                        "event_start" => $value->event_start,
+                    ]);
+                    // 戻り値チェック
+                    if ($temp === NULL) {
+                        throw new \Exception("新規イベントマスターの登録に失敗しました。");
+                    }
+                }
+
+                // インポート済みのLogレコードは is_registered = 1 と更新する
+                $_ = $value->update([
+                    "unique_user_id" => $unique_user_id,
                 ]);
             }
+
+            // イベント参加履歴テーブルを更新する
+            $event_update = [];
+            $result = Event::with([
+                "logs" => function ($query) {
+                    $query->where("is_registered", 0);
+                }
+            ])->get();
+            foreach ($result as $key => $value) {
+                foreach($value->logs as $k => $v) {
+                    $event_update[] = [
+                        "event_id" => $value->id,
+                        "unique_user_id" => $v->unique_user_id,
+                    ];
+                }
+            }
+            print_r($event_update);
+            print_r(array_unique($event_update));
+            $result = AttendedEvent::insert($event_update);
         } catch(\Exception $e) {
             // エラーページを表示させる
             return view("admin.error.index", [

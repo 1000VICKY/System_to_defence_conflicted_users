@@ -1,1 +1,2 @@
-{{$error->getMessage()}}
+
+{{ $error->getMessage() }}
