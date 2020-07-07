@@ -8,7 +8,7 @@
 
   {{
     Form::open([
-      "url" => action("ImportController@upload"),
+      "url" => action("Admin\ImportController@upload"),
       "method" => "post",
       "enctype" => "multipart/form-data",
     ])

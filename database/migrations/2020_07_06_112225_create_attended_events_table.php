@@ -28,7 +28,7 @@ class CreateAttendedEventsTable extends Migration
             // 該当するイベントのユニークキー
             $table->unique("reception_number");
             // 複合ユニークキー
-            $table->unique("event_id_end_user_id", ["event_id", "end_user_id"]);
+            $table->unique(["event_id", "end_user_id"], "event_id_end_user_id");
         });
     }
 

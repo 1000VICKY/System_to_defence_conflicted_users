@@ -18,5 +18,7 @@ use Illuminate\Support\Facades\Route;
 // });
 
 Route::get("/", "TopController@index");
-Route::get("/import", "ImportController@index");
-Route::post("/import/upload", "ImportController@upload");
+Route::get("/admin/import", "Admin\ImportController@index");
+Route::post("/admin/import/upload", "Admin\ImportController@upload");
+
+Route::post("/admin/user", "Admin\UserController@upload");
