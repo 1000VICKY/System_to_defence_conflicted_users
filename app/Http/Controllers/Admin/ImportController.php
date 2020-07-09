@@ -160,11 +160,11 @@ class ImportController extends Controller
                 ])->whereHas("logs", function ($query) use ($value) {
                     $query->where("is_registered", 0);
                 })->get();
-                print_r($result->toArray());
+                // print_r($result->toArray());
                 // print_r($result->toArray());
                 foreach ($result as $event_key => $event_value) {
                     foreach ($event_value->logs as $log_key => $log_value) {
-                        print_r($event_value->toArray());
+                        // print_r($event_value->toArray());
                         $log_data = [
                             "event_id" => $event_value->id,
                             "unique_user_id" => $log_value->unique_user_id,
@@ -176,7 +176,9 @@ class ImportController extends Controller
                         }
                     }
                 }
-            // }
+            // ファイルアップロード画面へリダイレクトr
+            return redirect()->action("Admin\ImportController@index");
+                // }
         } catch(\RuntimeException $e) {
             // RuntimeExceptionはDBロジックの外で実行させる
             // エラーページを表示させる

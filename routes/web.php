@@ -21,4 +21,13 @@ Route::get("/", "TopController@index");
 Route::get("/admin/import", "Admin\ImportController@index");
 Route::post("/admin/import/upload", "Admin\ImportController@upload");
 
-Route::post("/admin/user", "Admin\UserController@upload");
+// ユニークな会員一覧画面
+Route::get("/admin/user/index", "Admin\UserController@index");
+Route::get("/admin/user", "Admin\UserController@index");
+Route::get("/admin/user/detail/{unique_user_id}", "Admin\UserController@detail");
+Route::get("/admin/user/all", "Admin\UserController@all");
+
+// ユニークなイベント一覧画面
+Route::get("/admin/event/index", "Admin\EventController@index");
+Route::get("/admin/event", "Admin\EventController@index");
+Route::get("/admin/event/user/{event_id}", "Admin\EventController@user");

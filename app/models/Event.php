@@ -22,4 +22,9 @@ class Event extends Model
     {
         return $this->hasMany(Log::class, "event_start", "event_start");
     }
+
+    public function attended_events()
+    {
+        return $this->hasMany(AttendedEvent::class, "event_id", "id");
+    }
 }
