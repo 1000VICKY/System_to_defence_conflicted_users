@@ -28,9 +28,7 @@ class TopController extends Controller
             ->orderBy("id", "desc")
             ->get();
 
-            foreach ($result as $key => $value) {
-                print_r($value->toArray());
-            }
+
             return view("index", [
 
             ]);

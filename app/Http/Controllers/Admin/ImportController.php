@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use App\Http\Controllers\Controller;
@@ -34,6 +35,9 @@ class ImportController extends Controller
     public function upload(ImportRequest $request, Response $response)
     {
         try {
+            // トランザクションを実行
+            DB::beginTransaction();
+
             $input = $request->all();
             // ファイルオブジェクトからイテレータを取得
             $uploaded_file = $input["csv_file"]->openFile();
@@ -43,30 +47,32 @@ class ImportController extends Controller
 
             // インポートされたヘッダーの検証
             if (array_intersect($regulation_header, $csv_header_array) !== $regulation_header) {
-                throw new \Exception("CSVヘッダーが規定とは異なります 。");
+                throw new \RuntimeException("CSVヘッダーが規定とは異なります 。");
             }
 
-            $header = [];
+            $headers = [];
             foreach ($csv_header_array as $key => $value) {
                 $column_key = array_keys($regulation_header, $value);
                 if (count($column_key) === 1) {
-                    $header[$key] = $column_key[0];
+                    $headers[$key] = $column_key[0];
                 }
             }
+
             // イテレータをすすめる
             $uploaded_file->next();
             $imported_data_list = [];
 
-            // インポートされたCSVをall_end_usersテーブルに登録する
+            // (1)logsテーブルへのデータ登録
+            // インポートされたCSVをlogsテーブルに登録する
             while($value = $uploaded_file->current()) {
                 // イテレータをすすめる
                 $uploaded_file->next();
                 $value = explode(",", mb_convert_encoding($value, "UTF-8", "CP932"));
-                if (array_intersect_key($header, $value) !== $header) {
+                if (array_intersect_key($headers, $value) !== $headers) {
                     continue;
                 }
                 $temp = [];
-                foreach ($header as $_key => $_value) {
+                foreach ($headers as $_key => $_value) {
                     $temp[$_value] = $value[$_key];
                 }
                 // CSVファイルのinsert時に重複を防ぐ
@@ -78,9 +84,11 @@ class ImportController extends Controller
                 $result = Log::create($temp);
             }
 
+
+            // (2)unique_usersテーブルへのデータ登録
             // 全ユーザー情報から未登録のユーザーをユニークユーザーとして登録する
-            $result = Log::where("is_registered", 0)->get();
-            foreach ($result as $key => $value) {
+            $logs = Log::where("is_registered", 0)->get();
+            foreach ($logs as $key => $value) {
 
                 // ユニークユーザーの重複チェック
                 $inner_response = UniqueUser::where([
@@ -119,47 +127,66 @@ class ImportController extends Controller
                 } else {
                     $unique_user_id = $inner_response->first()->id;
                 }
-                // イベントの重複チェック
+                // Logsテーブルのunique_user_idカラムを更新する
+                $value->update(["unique_user_id" => $unique_user_id]);
+            }
+
+            // (3)eventsテーブルへのデータ登録
+            // ユニークなイベント一覧をDBに登録する
+            foreach ($logs as $key => $value) {
                 $result = Event::where("event_start", $value->event_start)->get();
-                    if ($result->count() === 0) {
-                    // 未登録のイベントのみ追加する
-                    $temp = Event::create([
-                        "event_name" => $value->event_name,
-                        "event_start" => $value->event_start,
-                    ]);
-                    // 戻り値チェック
-                    if ($temp === NULL) {
-                        throw new \Exception("新規イベントマスターの登録に失敗しました。");
+                // 重複登録を除外する
+                if ($result->count() !== 0) {
+                    continue;
+                }
+                // 未登録のイベントのみ追加する
+                $temp = Event::create([
+                    "event_name" => $value->event_name,
+                    "event_start" => $value->event_start,
+                ]);
+                // 戻り値チェック
+                if ($temp === NULL) {
+                    throw new \Exception("新規イベントマスターの登録に失敗しました。");
+                }
+            }
+
+            // (4)attended_eventsテーブルへのデータ登録
+            // イベント参加履歴テーブルを更新する
+            // foreach ($logs as $key => $value) {
+            //     print_r($value->toArray());
+            //     exit();
+                $result = Event::with([
+                    "logs"
+                ])->whereHas("logs", function ($query) use ($value) {
+                    $query->where("is_registered", 0);
+                })->get();
+                print_r($result->toArray());
+                // print_r($result->toArray());
+                foreach ($result as $event_key => $event_value) {
+                    foreach ($event_value->logs as $log_key => $log_value) {
+                        print_r($event_value->toArray());
+                        $log_data = [
+                            "event_id" => $event_value->id,
+                            "unique_user_id" => $log_value->unique_user_id,
+                        ];
+
+                        $temp = AttendedEvent::where($log_data)->get();
+                        if ($temp->count() === 0) {
+                            AttendedEvent::create($log_data);
+                        }
                     }
                 }
-
-                // インポート済みのLogレコードは is_registered = 1 と更新する
-                $_ = $value->update([
-                    "unique_user_id" => $unique_user_id,
-                ]);
-            }
-
-            // イベント参加履歴テーブルを更新する
-            $event_update = [];
-            $result = Event::with([
-                "logs" => function ($query) {
-                    $query->where("is_registered", 0);
-                }
-            ])->get();
-            foreach ($result as $key => $value) {
-                foreach($value->logs as $k => $v) {
-                    $event_update[] = [
-                        "event_id" => $value->id,
-                        "unique_user_id" => $v->unique_user_id,
-                    ];
-                }
-            }
-            print_r($event_update);
-            print_r(array_unique($event_update));
-            $result = AttendedEvent::insert($event_update);
-        } catch(\Exception $e) {
+            // }
+        } catch(\RuntimeException $e) {
+            // RuntimeExceptionはDBロジックの外で実行させる
             // エラーページを表示させる
-            return view("admin.error.index", [
+            return view("error.index", [
+                "error" => $e,
+            ]);
+        } catch(\Exception $e) {
+            DB::rollback();
+            // エラーページを表示させる
+            return view("error.index", [
                 "error" => $e,
             ]);
         }
