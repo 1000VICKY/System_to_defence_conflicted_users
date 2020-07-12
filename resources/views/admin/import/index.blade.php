@@ -3,9 +3,7 @@
 
 
 
-<div class="container">
-
-
+<div class="container brilliant-block">
   {{
     Form::open([
       "url" => action("Admin\ImportController@upload"),

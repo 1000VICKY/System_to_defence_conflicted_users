@@ -17,6 +17,7 @@ class UniqueUser extends Model
         "is_deleted" => 0,
     ];
 
+    protected $primaryKey = "id";
     // ホワイトリスト指定
     protected $fillable = [
         "family_name",
@@ -39,5 +40,11 @@ class UniqueUser extends Model
     public function logs()
     {
         return $this->hasMany(Log::class, "unique_user_id", "id");
+    }
+
+    // 参加したイベント一覧
+    public function attended_events()
+    {
+        return $this->hasMany(AttendedEvent::class, "unique_user_id", "id");
     }
 }

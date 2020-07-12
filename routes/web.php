@@ -30,4 +30,4 @@ Route::get("/admin/user/all", "Admin\UserController@all");
 // ユニークなイベント一覧画面
 Route::get("/admin/event/index", "Admin\EventController@index");
 Route::get("/admin/event", "Admin\EventController@index");
-Route::get("/admin/event/user/{event_id}", "Admin\EventController@user");
+Route::get("/admin/event/{event_id}", "Admin\EventController@detail");

@@ -13,15 +13,16 @@ class AttendedEvent extends Model
     protected $fillable = [
         "event_id",
         "unique_user_id",
-        "reception_number",
     ];
 
     public function users() {
-        return $this->hasOne(UniqueUser::class, "id", "unique_user_id");
+        // return $this->belongsTo(UniqueUser::class, "ローカルキー", "外部キー");
+        return $this->belongsTo(UniqueUser::class, "unique_user_id", "id");
     }
 
     public function events()
     {
-        return $this->hasOne(Event::class, "id", "event_id");
+        // return $this->belongsTo(Event::class, "ローカルキー", "外部キー");
+        return $this->belongsTo(Event::class, "event_id", "id");
     }
 }
