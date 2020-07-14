@@ -1,7 +1,18 @@
 @include("admin.common.header")
 
-<p>マスター会員情報一覧</p>
 <div class="container brilliant-block">
+  <ul class="list-group list-group-flush border border-secondary">
+    <li class="list-group-item">
+      現在登録中のマスター会員情報一覧
+    </li>
+    <li class="list-group-item">
+      参加履歴ボタンをクリックすると
+      指定したユーザーの参加履歴が閲覧できます。
+    </li>
+  </ul>
+</div>
+<div class="container brilliant-block">
+  {{$unique_user_list->links()}}
   <table class="table table-sm">
     <thead class="thead-dark">
       <tr class="d-flex">

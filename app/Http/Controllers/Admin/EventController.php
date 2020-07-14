@@ -24,24 +24,25 @@ class EventController extends Controller
     public function index (Request $request, Response $response)
     {
         try {
-            // 現時点で過去のイベント一覧
-            $past_event_list = Event::with([
+            $limit = 5;
+            $event_list = Event::with([
                 "attended_events",
             ])
-            ->where("event_start", "<=", date("Y-m-d H:i:s"))
             ->orderBy("event_start", "desc")
-            ->get();
-            // 現時点でまだ開催されていないイベント一覧
-            $future_event_list = Event::with([
-                "attended_events",
-            ])
-            ->where("event_start", ">", date("Y-m-d H:i:s"))
-            ->orderBy("event_start", "desc")
-            ->get();
+            ->paginate($limit);
+            $today = date("Y-m-d H:i:s");
+            foreach ($event_list as $key => $value) {
+                $event_start = \DateTime::createFromFormat("Y-m-d H:i:s", $value->event_start);
+                $today = new \DateTime();
+                if ($event_start <= $today) {
+                    $value->future = 0;
+                } else {
+                    $value->future = 1;
+                }
+            }
             // rendering
             return view("admin.event.index", [
-                "past_event_list" => $past_event_list,
-                "future_event_list" => $future_event_list,
+                "event_list" => $event_list,
             ]);
         } catch (\Exception $e) {
             return view("error.index", [
@@ -64,6 +65,9 @@ class EventController extends Controller
         try {
             // 指定したevent_idのイベント情報を取得
             $event_info = Event::find($event_id);
+            if ($event_info === null) {
+                throw new \Exception("イベントID[{$event_id}]に紐づくイベント情報の取得に失敗しました。");
+            }
 
             // URLパラメータに指定された、event_idの参加者リストを取得
             $unique_user_list = AttendedEvent::with([
@@ -71,7 +75,8 @@ class EventController extends Controller
             ])
             ->where("event_id", $event_id)
             ->get();
-            // print_r($temp->toArray());
+
+            print_r($unique_user_list->toArray());
 
             // 参加するユーザーのIDのみを配列化
             $unique_user_id_list = [];
@@ -79,23 +84,27 @@ class EventController extends Controller
                 $unique_user_id_list[] = $value->users->id;
             }
 
+            print_r($unique_user_id_list);
+
             $contact_logs = [];
             foreach($unique_user_id_list as $key => $value) {
-                $attended_events = AttendedEvent::with([
+                $temp = AttendedEvent::with([
                     "users",
-                    "events"
                 ])
                 ->whereHas("users", function ($query) use ($unique_user_id_list, $value) {
+
                     $query->where("id", "!=", $value)->whereIn("id", $unique_user_id_list);
                 })
                 ->where("event_id", "!=", $event_id)
                 ->get();
 
+                $contacted_user = [];
+                foreach ($temp as $k => $v) {
+                    $contacted_user[$v->users->id] = $v->users;
+                }
                 // ユーザーIDと接触ユーザーをまとめる
-                $contact_logs[$value] = $attended_events;
+                $contact_logs[$value] = $contacted_user;
             }
-
-
 
             return view("admin.event.detail", [
                 "unique_user_list" => $unique_user_list,
