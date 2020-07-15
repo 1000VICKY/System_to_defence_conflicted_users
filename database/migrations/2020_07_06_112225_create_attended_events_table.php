@@ -19,6 +19,8 @@ class CreateAttendedEventsTable extends Migration
             $table->bigInteger("event_id");
             // end_user_id
             $table->bigInteger("unique_user_id");
+            // 最終的な参加or不参加データ(デフォルトは参加)
+            $table->tinyInteger("is_participated")->default(1);
             $table->timestamps();
 
             // 複合ユニークキー

@@ -1,5 +1,4 @@
 @include("admin.common.header")
-<p>参加者一覧</p>
 <div class="container brilliant-block">
   <ul class="list-group list-group-flush border border-secondary">
     <li class="list-group-item">イベント名「{{$event_info->event_name}}」への参加者一覧を取得</li>

@@ -21,20 +21,40 @@ class EventController extends Controller
      * @param Response $response
      * @return void
      */
-    public function index (Request $request, Response $response)
+    public function index (Request $request, Response $response, int $limit = 5)
     {
         try {
-            $limit = 5;
+            // GETパラメータの取得
+            $parameter = $request->all();
+            $keyword = "";
+            $event_start = "";
+
+            // 検索条件を加味してSQLを実行
             $event_list = Event::with([
-                "attended_events",
-            ])
+                "attended_events"
+            ]);
+            if (array_key_exists("keyword", $parameter) && strlen($parameter["keyword"]) > 0) {
+                $keyword = $parameter["keyword"];
+                $event_list->where("event_name", "like", "%{$keyword}%");
+            }
+            if (array_key_exists("event_start", $parameter)) {
+                $event_start = $parameter["event_start"];
+                $date = \DateTime::createFromFormat("Y-m-d", $event_start);
+                if ($date !== false && $event_start === $date->format("Y-m-d")){
+                    $event_list
+                    ->where("event_start", ">=", $event_start." "."00:00:00")
+                    ->where("event_start", "<=", $event_start." "."23:59:59");
+                }
+            }
+            $event_list = $event_list
             ->orderBy("event_start", "desc")
             ->paginate($limit);
+
             $today = date("Y-m-d H:i:s");
             foreach ($event_list as $key => $value) {
-                $event_start = \DateTime::createFromFormat("Y-m-d H:i:s", $value->event_start);
+                $_event_start = \DateTime::createFromFormat("Y-m-d H:i:s", $value->event_start);
                 $today = new \DateTime();
-                if ($event_start <= $today) {
+                if ($_event_start <= $today) {
                     $value->future = 0;
                 } else {
                     $value->future = 1;
@@ -42,6 +62,8 @@ class EventController extends Controller
             }
             // rendering
             return view("admin.event.index", [
+                "keyword" => $keyword,
+                "event_start" => $event_start,
                 "event_list" => $event_list,
             ]);
         } catch (\Exception $e) {

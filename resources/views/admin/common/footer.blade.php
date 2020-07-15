@@ -1,13 +1,15 @@
-
-  <script>
+    <script>
       $(function (e) {
-          $("#previous").on("click", function (e) {
-            history.back();
-          });
-          $("#next").on("click", function (e) {
-            history.go(1);
-          });
+        $("#previous").on("click", function (e) {
+          history.back();
+        });
+        $("#next").on("click", function (e) {
+          history.go(1);
+        });
       })
-  </script>
+      flatpickr("#event_start", {
+        dateFormat: "Y-m-d"
+      });
+    </script>
   </body>
 </html>

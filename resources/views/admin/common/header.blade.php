@@ -7,13 +7,15 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="msapplication-tap-highlight" content="no">
     <meta name="description" content="Learn how to quickly get started using our CSS framework. We have guides for a variety of skill levels.">
-    <title>非バッティングシステム管理画面</title>
+    <title>競合防止システム管理画面</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
     <link rel="stylesheet" href="/css/index.css">
     <link href="https://fonts.googleapis.com/css?family=Lato:400,700|Noto+Sans+JP:400,700" rel="stylesheet">
+    <link rel="stylesheet" href="/css/flatpickr.css">
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+    <script src="/js/flatpickr.js"></script>
   </head>
   <body>
     <header>
@@ -44,12 +46,12 @@
       <div class="row justify-content-between">
         <div class="col-2">
           <p><button id="previous" class="btn btn-outline-dark">
-            <<前へ
+            <<前のページへ戻る
           </button></p>
         </div>
         <div class="col-2">
           <p><button id="next" class="btn btn-outline-dark">
-            次へ>>
+            次のページへ進む>>
           </button></p>
         </div>
       </div>

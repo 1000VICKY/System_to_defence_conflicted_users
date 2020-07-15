@@ -1,5 +1,24 @@
 @include("admin.common.header")
 
+
+<div class="container brilliant-block">
+  <div class="alert alert-secondary" role="alert">
+    <div class="alert-heading">
+      <h4>
+        <span class="btn btn-outline-dark">{{$unique_user_info->id}}</span>
+        {{$unique_user_info->family_name}} {{$unique_user_info->given_name}}さん
+      </h4>
+    </div>
+    <p>現在、{{$unique_user_info->family_name}} {{$unique_user_info->given_name}}さんの詳細情報を閲覧中です。</p>
+    <hr>
+    <p class="mb-0">
+      <a href="{{action("Admin\UserController@detail", ["unique_user_id" => $unique_user_info->id])}}" class="btn btn-dark">
+        {{$unique_user_info->family_name}} {{$unique_user_info->given_name}}さんの参加履歴を確認
+      </a>
+    </p>
+  </div>
+</div>
+
 <div class="container brilliant-block">
   <ul class="list-group list-group-flush border border-secondary">
     <li class="list-group-item">

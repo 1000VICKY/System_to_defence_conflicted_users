@@ -15,6 +15,31 @@
     </li>
   </ul>
 </div>
+
+<div class="container brilliant-block">
+  {{ Form :: open([
+    "url" => action("Admin\UserController@index"),
+    "method" => "GET",
+  ])}}
+  <div class="row">
+    <div class="col">
+      {{ Form :: input("text", "keyword", $keyword, [
+        "class" => "form-control",
+        "id" => "keyword",
+        "placeholder" => "例)ヤマダタロウ or 山田 or 太郎など"
+      ])}}
+    </div>
+    <div class="col"></div>
+    <div class="col">
+      {{ Form :: input("submit", "search_user", "入力した名前で検索", [
+        "class" => "form-control btn btn-dark",
+        "id" => "search_user_button",
+      ])}}
+    </div>
+  </div>
+  {{ Form :: close()}}
+</div>
+
 <div class="container brilliant-block">
   {{$unique_user_list->links()}}
   @if ($unique_user_list->count() > 0)

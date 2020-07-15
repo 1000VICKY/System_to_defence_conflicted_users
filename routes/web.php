@@ -27,6 +27,7 @@ Route::get("/admin/user", "Admin\UserController@index");
 Route::get("/admin/user/detail/{unique_user_id}", "Admin\UserController@detail");
 Route::get("/admin/user/all", "Admin\UserController@all");
 Route::get("/admin/user/contact/{unique_user_id}", "Admin\UserController@contact");
+Route::post("/admin/user/participate/{unique_user_id}/{event_id}", "Admin\UserController@participate");
 
 // ユニークなイベント一覧画面
 Route::get("/admin/event/index", "Admin\EventController@index");
