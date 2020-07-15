@@ -17,6 +17,8 @@ return [
         "phone_number" => "フォーム情報3",
         "email" => "メールアドレス",
         "job" => "フォーム情報5",
-        "event_start" => "イベント開始日"
+        "event_start" => "イベント開始日",
+        "payment_date" => "入金日",
+        "question" => "フォーム情報8",
     ]
 ];

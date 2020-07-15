@@ -69,46 +69,94 @@ class EventController extends Controller
                 throw new \Exception("イベントID[{$event_id}]に紐づくイベント情報の取得に失敗しました。");
             }
 
-            // URLパラメータに指定された、event_idの参加者リストを取得
-            $unique_user_list = AttendedEvent::with([
+            // 現在閲覧中のイベントの全参加者一覧
+            $attended_unique_users = AttendedEvent::with([
                 "users",
             ])
             ->where("event_id", $event_id)
             ->get();
 
-            print_r($unique_user_list->toArray());
+            // print_r($unique_users->toArray());
 
-            // 参加するユーザーのIDのみを配列化
+            // 参加者のユーザーIDのみを配列化
             $unique_user_id_list = [];
-            foreach ($unique_user_list as $key => $value) {
-                $unique_user_id_list[] = $value->users->id;
+            foreach ($attended_unique_users as $key => $value) {
+                $unique_user_id_list[] = $value->unique_user_id;
             }
-
             print_r($unique_user_id_list);
 
-            $contact_logs = [];
-            foreach($unique_user_id_list as $key => $value) {
-                $temp = AttendedEvent::with([
-                    "users",
+            $attended_event_id_list= [];
+            $contacted_users = [];
+            foreach ($attended_unique_users as $key => $value) {
+                $_id = $value->unique_user_id;
+                $attended_event_logs = AttendedEvent::with([
+                    "events"
                 ])
-                ->whereHas("users", function ($query) use ($unique_user_id_list, $value) {
-
-                    $query->where("id", "!=", $value)->whereIn("id", $unique_user_id_list);
+                ->whereHas("events", function ($query) {
+                    $query->where("event_start", "<=", date("Y-m-d H:i:s"));
                 })
+                ->where("unique_user_id", $_id)
                 ->where("event_id", "!=", $event_id)
                 ->get();
-
-                $contacted_user = [];
-                foreach ($temp as $k => $v) {
-                    $contacted_user[$v->users->id] = $v->users;
+                // print_r($attended_event_logs->toArray());
+                $attended_event_id_list[$_id] = [];
+                foreach ($attended_event_logs as $in_key => $in_value) {
+                    $attended_event_id_list[$_id][] = $in_value->event_id;
                 }
-                // ユーザーIDと接触ユーザーをまとめる
-                $contact_logs[$value] = $contacted_user;
+                // print_r($attended_event_id_list);
+                print_r($attended_event_id_list);
+                $temp = AttendedEvent::with([
+                    "users"
+                ])
+                ->where("unique_user_id", "!=", $_id)
+                ->whereIn("unique_user_id", $unique_user_id_list)
+                ->whereIn("event_id", $attended_event_id_list[$_id])
+                ->get();
+                $contacted_users[$_id] = $temp;
             }
+            // print_r($contacted_user_id_list);
+            // exit();
+            // 参加ユーザーに関係する履歴を取得する
+            // $attended_event_logs = AttendedEvent::whereIn("unique_user_id", $unique_user_id_list)->get();
+            // print_r($attended_event_logs->toArray());
+            // $contact_logs = [];
+            // foreach($unique_user_id_list as $out_key => $out_value) {
+            //     foreach ($attended_event_logs as $in_key => $in_value) {
+            //         if ((int)$in_value->users->id === (int)$out_value) {
+            //             $contact_logs[$out_value][] = $in_value->users->toArray();
+            //         }
+            //     }
+            // }
+
+            // print_r($contact_logs);
+            // exit();
+
+            // print_r($unique_user_id_list);
+
+
+            // foreach($unique_user_id_list as $key => $value) {
+            //     $temp = AttendedEvent::with([
+            //         "users",
+            //     ])
+            //     ->where("event_id", "!=", 7)
+            //     ->whereIn("unique_user_id", [17])
+            //     ->get();
+            //     // var_dump($value);
+            //     // print_r($temp->toArray());
+            //     $contacted_user = [];
+            //     print_r($temp->toArray());
+            //     foreach ($temp as $k => $v) {
+            //         $contacted_user[] = $v->users;
+            //     }
+            //     // ユーザーIDと接触ユーザーをまとめる
+            //     $contact_logs[$value] = $contacted_user;
+            //     unset($temp);
+            // }
+            // print_r($contact_logs);
 
             return view("admin.event.detail", [
-                "unique_user_list" => $unique_user_list,
-                "contact_logs" => $contact_logs,
+                "attended_unique_users" => $attended_unique_users,
+                "contacted_users" => $contacted_users,
                 "event_info" => $event_info,
             ]);
         } catch (\Exception $e) {

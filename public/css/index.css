@@ -1,20 +1,24 @@
 * {
     font-size: 10pt;
     font-family: 'Lato', 'Noto Sans JP', 'ヒラギノ角ゴ ProN', 'Hiragino Kaku Gothic ProN', 'メイリオ', Meiryo, 'ＭＳ Ｐゴシック', 'MS PGothic', sans-serif;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 .brilliant-block {
     margin-top: 2.5%;
 }
 
-.male {
+tr.male {
     /* border: 1px solid #6ba2c7; */
     background-color: #dde4eb;
+    border-bottom: 1px solid #a2adb8;
 }
 
-.female {
+tr.female {
     /* border: 1px solid #c76b82; */
     background-color: #f7ede9;
+    border-bottom: 1px solid #cfb3a7;
 }
 
 .past-event-row {

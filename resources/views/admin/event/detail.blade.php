@@ -7,7 +7,7 @@
   </ul>
 </div>
 <div class="container brilliant-block">
-  @foreach($unique_user_list as $key => $value)
+  @foreach($attended_unique_users as $key => $value)
   <table class="table table-sm">
     <thead class="thead-dark">
       <tr class="d-flex">
@@ -23,14 +23,15 @@
       <tr @if ($value->users->gender === "男性") class="male d-flex" @else class="female d-flex" @endif)>
         <td class="col-1"><p class="btn btn-outline-dark">{{$value->users->id}}</p></td>
         <td class="col-3">
-          <p>{{$value->users->family_name}} {{$value->users->given_name}}/{{$value->users->age}}歳<br>({{$value->users->family_name_sort}} {{$value->users->given_name_sort}})</p>
+          <p>{{$value->users->family_name}} {{$value->users->given_name}}/{{$value->users->age}}歳<br>
+            ({{$value->users->family_name_sort}} {{$value->users->given_name_sort}})</p>
         </td>
         <td class="col-3">{{$value->users->phone_number}}<br>{{$value->users->email}}</td>
         <td class="col-2">{{$value->users->job}}<br>{{$value->users->gender}}</td>
         <td class="col-2">{{$value->users->reception_number}}</td>
         <td class="col-1"><a href="{{action("Admin\UserController@detail", ["unique_user_id" => $value->users->id])}}" class="btn btn-dark">参加履歴</a></td>
       </tr>
-      @if (count($contact_logs[$value->users->id]) > 0)
+      @if (count($contacted_users[$value->users->id]) > 0)
       <!-- 接触履歴 -->
       <tr class="d-flex">
         <th class="col-1" scope="col">接触履歴</th>
@@ -38,16 +39,17 @@
         <th class="col-3" scope="col"></th>
         <th class="col-2" scope="col"></th>
         <th class="col-2" scope="col"></th>
-        <th class="col-1" scope="col"></th>
       </tr>
-      @foreach($contact_logs[$value->users->id] as $contact_key => $contact_value)
-      <tr @if ($contact_value->gender === "男性") class="male d-flex" @else class="female d-flex" @endif)>
+      @foreach($contacted_users[$value->users->id] as $contact_key => $contact_value)
+      <tr @if ($contact_value->users->gender === "男性") class="male d-flex" @else class="female d-flex" @endif)>
         <td class="col-1"></td>
-        <td class="col-3">{{$contact_value->family_name}} {{$contact_value->given_name}}({{$contact_value->family_name_sort}} {{$contact_value->given_name_sort}})</td>
-        <td class="col-3">{{$contact_value->phone_number}}<br>{{$contact_value->email}}</td>
-        <td class="col-2">{{$contact_value->job}}<br>{{$contact_value->gender}}</td>
-        <td class="col-2">{{$contact_value->reception_number}}</td>
-        <td class="col-1"><a href="{{action("Admin\UserController@detail", ["unique_user_id" => $contact_value->id])}}" class="btn btn-dark">参加履歴</a></td>
+        <td class="col-3">
+          {{$contact_value->users->family_name}} {{$contact_value->users->given_name}}/{{$value->users->age}}歳<br>
+          ({{$contact_value->users->family_name_sort}} {{$contact_value->users->given_name_sort}})
+        </td>
+        <td class="col-3">{{$contact_value->users->phone_number}}<br>{{$contact_value->users->email}}</td>
+        <td class="col-2">{{$contact_value->users->job}}<br>{{$contact_value->users->gender}}</td>
+        <td class="col-2">{{$contact_value->users->reception_number}}</td>
       </tr>
       @endforeach
       @endif

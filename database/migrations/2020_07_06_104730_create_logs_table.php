@@ -30,6 +30,10 @@ class CreateLogsTable extends Migration
             $table->date("birth_date")->nullable();
             // 年齢と生年月日は別カラムでもつ
             $table->integer("age");
+            // 質疑
+            $table->text("question")->nullable();
+            // 入金日
+            $table->date("payment_date")->nullable();
             $table->tinyInteger("is_displayed")->default(1);
             $table->tinyInteger("is_deleted")->default(0);
             $table->tinyInteger("is_registered")->default(0);

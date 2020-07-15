@@ -31,6 +31,8 @@ class Log extends Model
         "gender",
         "birth_date",
         "age",
+        "question",
+        "payment_date",
         "is_displayed",
         "is_deleted",
         "is_registered",

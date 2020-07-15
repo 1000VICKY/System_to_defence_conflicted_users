@@ -40,3 +40,17 @@
         </div>
       </nav>
     </header>
+    <div class="container brilliant-block">
+      <div class="row justify-content-between">
+        <div class="col-2">
+          <p><button id="previous" class="btn btn-outline-dark">
+            <<前へ
+          </button></p>
+        </div>
+        <div class="col-2">
+          <p><button id="next" class="btn btn-outline-dark">
+            次へ>>
+          </button></p>
+        </div>
+      </div>
+    </div>

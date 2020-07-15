@@ -1,7 +1,12 @@
 @include("admin.common.header")
-<p>マスターイベント情報一覧</p>
+
+<div class="container brilliant-block">
+  <p>マスターイベント情報一覧</p>
+</div>
 <div class="container brilliant-block">
   {{$event_list->links()}}
+
+  @if ($event_list->count() > 0)
   <table class="table table-sm">
     <thead class="thead-dark">
       <tr class="d-flex">
@@ -21,5 +26,9 @@
       </tr>
       @endforeach
     </tbody>
+  </table>
+  @else
+  <p>マスターイベント情報が存在しません。</p>
+  @endif
 </div>
 @include("admin.common.footer")

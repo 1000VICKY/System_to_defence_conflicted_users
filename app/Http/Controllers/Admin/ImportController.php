@@ -37,7 +37,7 @@ class ImportController extends Controller
         try {
             // トランザクションを実行
             DB::beginTransaction();
-
+            $imported_data = [];
             $input = $request->all();
             // ファイルオブジェクトからイテレータを取得
             $uploaded_file = $input["csv_file"]->openFile();
@@ -60,13 +60,13 @@ class ImportController extends Controller
 
             // イテレータをすすめる
             $uploaded_file->next();
-            $imported_data_list = [];
 
             // (1)logsテーブルへのデータ登録
             // インポートされたCSVをlogsテーブルに登録する
             while($value = $uploaded_file->current()) {
                 // イテレータをすすめる
                 $uploaded_file->next();
+
                 $value = explode(",", mb_convert_encoding($value, "UTF-8", "CP932"));
                 if (array_intersect_key($headers, $value) !== $headers) {
                     continue;
@@ -81,7 +81,8 @@ class ImportController extends Controller
                 if ($result->count() !== 0) {
                     continue;
                 }
-                $result = Log::create($temp);
+                $result = Log::insert($temp);
+                $imported_data["logs"][] = join("｜", $temp);
             }
 
 
@@ -106,7 +107,7 @@ class ImportController extends Controller
                 if ($inner_response->count() === 0) {
                     // 未登録のユニークユーザーのみ
                     // ユニークユーザーのマスタデータの追加を行う
-                    $temp = UniqueUser::create([
+                    $create_data = [
                         "family_name" => $value->family_name,
                         "given_name" => $value->given_name,
                         "family_name_sort" => $value->family_name_sort,
@@ -117,13 +118,15 @@ class ImportController extends Controller
                         "gender" => $value->gender,
                         "age" => $value->age,
                         "reception_number" => $value->reception_number,
-                    ]);
+                    ];
+                    $temp = UniqueUser::create($create_data);
                     // 挿入直後のプライマリキー
                     $unique_user_id = $temp->id;
                     // 戻り値チェック
                     if ($temp === NULL) {
                         throw new \Exception("新規ユニークユーザーの登録に失敗しました。");
                     }
+                    $imported_data["unique_users"][] = join("｜", $create_data);
                 } else {
                     $unique_user_id = $inner_response->first()->id;
                 }
@@ -140,14 +143,17 @@ class ImportController extends Controller
                     continue;
                 }
                 // 未登録のイベントのみ追加する
-                $temp = Event::create([
+                $create_data = [
                     "event_name" => $value->event_name,
                     "event_start" => $value->event_start,
-                ]);
+                ];
+
+                $temp = Event::create($create_data);
                 // 戻り値チェック
                 if ($temp === NULL) {
                     throw new \Exception("新規イベントマスターの登録に失敗しました。");
                 }
+                $imported_data["events"][] = join("｜", $create_data);
             }
 
             // (4)attended_eventsテーブルへのデータ登録
@@ -155,30 +161,34 @@ class ImportController extends Controller
             // foreach ($logs as $key => $value) {
             //     print_r($value->toArray());
             //     exit();
-                $result = Event::with([
-                    "logs"
-                ])->whereHas("logs", function ($query) use ($value) {
-                    $query->where("is_registered", 0);
-                })->get();
-                // print_r($result->toArray());
-                // print_r($result->toArray());
-                foreach ($result as $event_key => $event_value) {
-                    foreach ($event_value->logs as $log_key => $log_value) {
-                        // print_r($event_value->toArray());
-                        $log_data = [
-                            "event_id" => $event_value->id,
-                            "unique_user_id" => $log_value->unique_user_id,
-                        ];
+            $result = Event::with([
+                "logs"
+            ])->whereHas("logs", function ($query) use ($value) {
+                $query->where("is_registered", 0);
+            })->get();
+            // print_r($result->toArray());
+            // print_r($result->toArray());
+            foreach ($result as $event_key => $event_value) {
+                foreach ($event_value->logs as $log_key => $log_value) {
+                    // print_r($event_value->toArray());
+                    $log_data = [
+                        "event_id" => $event_value->id,
+                        "unique_user_id" => $log_value->unique_user_id,
+                    ];
 
-                        $temp = AttendedEvent::where($log_data)->get();
-                        if ($temp->count() === 0) {
-                            AttendedEvent::create($log_data);
-                        }
+                    $temp = AttendedEvent::where($log_data)->get();
+                    if ($temp->count() === 0) {
+                        AttendedEvent::create($log_data);
+                        $imported_data["attended_events"][] = join("｜", $log_data);
                     }
                 }
-            // ファイルアップロード画面へリダイレクトr
-            return redirect()->action("Admin\ImportController@index");
-                // }
+            }
+            DB::commit();
+            return view("admin.import.upload", [
+                "imported_data" => $imported_data
+            ]);
+            // ファイルアップロード画面へリダイレクト
+            // return redirect()->action("Admin\ImportController@index");
         } catch(\RuntimeException $e) {
             // RuntimeExceptionはDBロジックの外で実行させる
             // エラーページを表示させる

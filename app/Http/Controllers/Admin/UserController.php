@@ -49,10 +49,10 @@ class UserController extends Controller
      * @param Response $response
      * @return void
      */
-    public function all (Request $request, Response $response)
+    public function all (Request $request, Response $response, int $limit = 20)
     {
         try {
-            $logs = Log::orderBy("event_start", "desc")->get();
+            $logs = Log::orderBy("event_start", "desc")->paginate($limit);
             return view("admin.user.all", [
                 "logs" => $logs,
             ]);
@@ -157,6 +157,58 @@ class UserController extends Controller
                 "future_events" => $future_events,
                 // 参加しない未来のイベント一覧
                 "not_attended_events" => $not_attended_events,
+            ]);
+        } catch (\Exception $e) {
+            // エラー画面
+            return view("error.index", [
+                "error" => $e,
+            ]);
+        }
+    }
+
+
+
+    /**
+     * 指定したユーザーの接触履歴一覧を取得
+     *
+     * @param Request $request
+     * @param Response $response
+     * @param integer $unique_user_id
+     * @return void
+     */
+    public function contact(Request $request, Response $response, int $unique_user_id)
+    {
+        try {
+            // 閲覧中のユーザー情報を取得
+            $unique_user_info = UniqueUser::findOrFail($unique_user_id);
+
+            $attended_event_id_list = [];
+            // 現時点で、参加した event_idの一覧を取得する
+            $event_list = AttendedEvent::with([
+                "events"
+            ])
+            ->whereHas("events", function ($query) {
+                $query->where("event_start", "<=", date("Y-m-d H:i:s"));
+            })
+            ->where("unique_user_id", $unique_user_id)
+            ->select("event_id")
+            ->get();
+
+            foreach ($event_list as $key => $value) {
+                $attended_event_id_list[] = $value->event_id;
+            }
+
+            // 自身が参加したイベントに参加した他の会員ユーザー一覧を取得
+            $contacted_user_list = AttendedEvent::with([
+                "users"
+            ])
+            ->whereIn("event_id", $attended_event_id_list)
+            ->where("unique_user_id", "!=", $unique_user_id)
+            ->get();
+
+            return view("admin.user.contact", [
+                "unique_user_info" => $unique_user_info,
+                "contacted_user_list" => $contacted_user_list,
             ]);
         } catch (\Exception $e) {
             // エラー画面
