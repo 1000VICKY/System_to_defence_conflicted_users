@@ -24,3 +24,8 @@ tr.female {
 .past-event-row {
     background-color: #EFEFEF;
 }
+
+.error_validation {
+    color: #FF0000;
+
+}

@@ -34,7 +34,8 @@ class CreateUniqueUsersTable extends Migration
 
             $table->timestamps();
             // ユニークキー
-            $table->unique(["family_name", "given_name"], "family_name_given_name");
+            $table->unique(["family_name", "given_name", "phone_number"], "family_name_given_name_phone_number");
+            $table->unique(["family_name", "given_name", "email"], "family_name_given_name_email");
             $table->unique("phone_number");
             $table->unique("email");
             $table->unique("reception_number");

@@ -27,13 +27,16 @@
         <div class="collapse navbar-collapse" id="navbarNavDropdown">
           <ul class="navbar-nav">
             <li class="nav-item">
-              <a class="nav-link" href="/index.php/admin/user/index">マスター会員情報一覧</a>
+              <a class="nav-link" href="/index.php/admin/user/index">会員情報一覧</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/index.php/admin/user/create">会員情報登録</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="/index.php/admin/user/all">取り込み済みCSVデータ一覧</a>
               </li>
             <li class="nav-item">
-              <a class="nav-link" href="/index.php/admin/event">マスターイベント情報一覧</a>
+              <a class="nav-link" href="/index.php/admin/event">イベント情報一覧</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="/index.php/admin/import">CSVのインポート</a>

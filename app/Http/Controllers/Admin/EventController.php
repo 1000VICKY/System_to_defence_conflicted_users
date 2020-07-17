@@ -86,7 +86,7 @@ class EventController extends Controller
     {
         try {
             // 指定したevent_idのイベント情報を取得
-            $event_info = Event::find($event_id);
+            $event_info = Event::findOrFail($event_id);
             if ($event_info === null) {
                 throw new \Exception("イベントID[{$event_id}]に紐づくイベント情報の取得に失敗しました。");
             }
@@ -95,6 +95,8 @@ class EventController extends Controller
             $attended_unique_users = AttendedEvent::with([
                 "users",
             ])
+            // 参加スタータスが1のもののみ
+            ->where("is_participated", Config("const.participated_status.is_participated"))
             ->where("event_id", $event_id)
             ->get();
 
@@ -105,21 +107,26 @@ class EventController extends Controller
             foreach ($attended_unique_users as $key => $value) {
                 $unique_user_id_list[] = $value->unique_user_id;
             }
+            // 参加者のみのunique_user_id一覧
             print_r($unique_user_id_list);
 
             $attended_event_id_list= [];
             $contacted_users = [];
             foreach ($attended_unique_users as $key => $value) {
                 $_id = $value->unique_user_id;
+
+                // unique_user_id === $_idのユーザーの過去の参加履歴一覧を取得
                 $attended_event_logs = AttendedEvent::with([
                     "events"
                 ])
                 ->whereHas("events", function ($query) {
                     $query->where("event_start", "<=", date("Y-m-d H:i:s"));
                 })
+                ->where("is_participated", Config("const.participated_status.is_participated"))
                 ->where("unique_user_id", $_id)
                 ->where("event_id", "!=", $event_id)
                 ->get();
+
                 // print_r($attended_event_logs->toArray());
                 $attended_event_id_list[$_id] = [];
                 foreach ($attended_event_logs as $in_key => $in_value) {
@@ -127,55 +134,17 @@ class EventController extends Controller
                 }
                 // print_r($attended_event_id_list);
                 print_r($attended_event_id_list);
+
                 $temp = AttendedEvent::with([
                     "users"
                 ])
                 ->where("unique_user_id", "!=", $_id)
                 ->whereIn("unique_user_id", $unique_user_id_list)
                 ->whereIn("event_id", $attended_event_id_list[$_id])
+                ->where("is_participated", Config("const.participated_status.is_participated"))
                 ->get();
                 $contacted_users[$_id] = $temp;
             }
-            // print_r($contacted_user_id_list);
-            // exit();
-            // 参加ユーザーに関係する履歴を取得する
-            // $attended_event_logs = AttendedEvent::whereIn("unique_user_id", $unique_user_id_list)->get();
-            // print_r($attended_event_logs->toArray());
-            // $contact_logs = [];
-            // foreach($unique_user_id_list as $out_key => $out_value) {
-            //     foreach ($attended_event_logs as $in_key => $in_value) {
-            //         if ((int)$in_value->users->id === (int)$out_value) {
-            //             $contact_logs[$out_value][] = $in_value->users->toArray();
-            //         }
-            //     }
-            // }
-
-            // print_r($contact_logs);
-            // exit();
-
-            // print_r($unique_user_id_list);
-
-
-            // foreach($unique_user_id_list as $key => $value) {
-            //     $temp = AttendedEvent::with([
-            //         "users",
-            //     ])
-            //     ->where("event_id", "!=", 7)
-            //     ->whereIn("unique_user_id", [17])
-            //     ->get();
-            //     // var_dump($value);
-            //     // print_r($temp->toArray());
-            //     $contacted_user = [];
-            //     print_r($temp->toArray());
-            //     foreach ($temp as $k => $v) {
-            //         $contacted_user[] = $v->users;
-            //     }
-            //     // ユーザーIDと接触ユーザーをまとめる
-            //     $contact_logs[$value] = $contacted_user;
-            //     unset($temp);
-            // }
-            // print_r($contact_logs);
-
             return view("admin.event.detail", [
                 "attended_unique_users" => $attended_unique_users,
                 "contacted_users" => $contacted_users,

@@ -20,5 +20,14 @@ return [
         "event_start" => "イベント開始日",
         "payment_date" => "入金日",
         "question" => "フォーム情報8",
-    ]
+    ],
+
+    "participated_status" => [
+        "is_participated" => 1,
+        "not_participated" => 0,
+    ],
+    "display_status" => [
+        "is_displayed" => 1,
+        "not_displayed" => 0,
+    ],
 ];

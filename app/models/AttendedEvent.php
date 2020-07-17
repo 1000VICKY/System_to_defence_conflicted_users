@@ -13,6 +13,7 @@ class AttendedEvent extends Model
     protected $fillable = [
         "event_id",
         "unique_user_id",
+        "is_participated",
     ];
 
     public function users() {
