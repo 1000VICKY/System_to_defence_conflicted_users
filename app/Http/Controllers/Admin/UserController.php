@@ -49,8 +49,9 @@ class UserController extends Controller
                     ->orWhere("given_name_sort", "like", mb_convert_kana("%{$keyword}%", "C", "UTF-8"))
                     ->orWhere("family_name", "like", "%{$keyword}%")
                     ->orWhere("given_name", "like", "%{$keyword}%");
-                })->paginate($limit);
+                });
             }
+            $unique_user_list->orderBy("id", "desc");
             // 検索用emailアドレスが入力されている場合
             if (array_key_exists("email", $parameter)) {
                 $email = $parameter["email"];
@@ -60,6 +61,7 @@ class UserController extends Controller
             $unique_user_list = $unique_user_list->paginate($limit);
             return view("admin.user.index", [
                 "keyword" => $keyword,
+                "email" => $email,
                 "unique_user_list" => $unique_user_list,
             ]);
         } catch (\Exception $e) {
@@ -81,7 +83,9 @@ class UserController extends Controller
     public function all (UserRequest $request, Response $response, int $limit = 20)
     {
         try {
-            $logs = Log::orderBy("event_start", "desc")->paginate($limit);
+            $logs = Log::orderBy("event_start", "desc")
+            ->orderBy("reception_date", "desc")
+            ->paginate($limit);
             return view("admin.user.all", [
                 "logs" => $logs,
             ]);
@@ -129,9 +133,9 @@ class UserController extends Controller
                     $attended_events_id_list[] = $value->event_id;
                 }
             }
-            echo ("<pre>");
-            print_r($attended_events_id_list);
-            echo ("</pre>");
+            // echo ("<pre>");
+            // print_r($attended_events_id_list);
+            // echo ("</pre>");
 
             // 現時点で、開催前の参加予定の未来のイベント一覧
             $future_events = AttendedEvent::with([
@@ -143,7 +147,8 @@ class UserController extends Controller
             ->where("is_participated", Config("const.participated_status.is_participated"))
             ->where("unique_user_id", $unique_user_id)
             ->get();
-            print_r($future_events->toArray());
+
+            // print_r($future_events->toArray());
 
             // 未来に参加予定のevent_idを含んだ過去の参加したevent_idの配列
             $attended_events_id_list_including_future = $attended_events_id_list;
@@ -162,10 +167,10 @@ class UserController extends Controller
             foreach($contacted_users as $key => $value) {
                 $contacted_user_id_list [] = $value->users->id;
             }
-            echo ("<pre>");
-            print_r(array_unique($contacted_user_id_list));
+            // echo ("<pre>");
+            // print_r(array_unique($contacted_user_id_list));
             // print_r($contacted_users->toArray());
-            echo ("</pre>");
+            // echo ("</pre>");
 
             // 現時点で、開催前の参加予定のないの未来のイベント一覧を取得する
             $not_attended_events = Event::with([
@@ -175,9 +180,9 @@ class UserController extends Controller
             ->where("event_start", ">", date("Y-m-d H:i:s"))
             ->get();
 
-            echo ("<pre>");
-            print_r($not_attended_events->toArray());
-            echo ("</pre>");
+            // echo ("<pre>");
+            // print_r($not_attended_events->toArray());
+            // echo ("</pre>");
 
             foreach ($not_attended_events as $key => $value) {
                 // 参加予定のユーザーID
@@ -185,9 +190,9 @@ class UserController extends Controller
                 foreach ($value->attended_events as $k => $v) {
                     $temp[] = $v->unique_user_id;
                 }
-                echo ("<pre>");
-                print_r($temp);
-                echo ("</pre>");
+                // echo ("<pre>");
+                // print_r($temp);
+                // echo ("</pre>");
                 $conflicted_user_id_list = array_intersect($contacted_user_id_list, $temp);
                 // 現在のindexキーのイベントで衝突する人数
                 $value->numerator = count($conflicted_user_id_list);
@@ -200,9 +205,9 @@ class UserController extends Controller
                 }
 
             }
-            print_r($not_attended_events->toArray());
-            print_r($attended_events_id_list);
-            print_r($not_attended_events->toArray());
+            // print_r($not_attended_events->toArray());
+            // print_r($attended_events_id_list);
+            // print_r($not_attended_events->toArray());
 
             return view("admin.user.detail", [
                 // 閲覧中のユーザー情報を取得
@@ -237,8 +242,10 @@ class UserController extends Controller
         try {
             // 閲覧中のユーザー情報を取得
             $unique_user_info = UniqueUser::findOrFail($unique_user_id);
+            if ($unique_user_info === NULL) {
+                throw new \Exception("指定した会員情報がみつかりません。");
+            }
 
-            $attended_event_id_list = [];
             // 現時点で、参加した event_idの一覧を取得する
             $event_list = AttendedEvent::with([
                 "events"
@@ -246,10 +253,13 @@ class UserController extends Controller
             ->whereHas("events", function ($query) {
                 $query->where("event_start", "<=", date("Y-m-d H:i:s"));
             })
+            ->where("is_participated", Config("const.participated_status.is_participated"))
             ->where("unique_user_id", $unique_user_id)
             ->select("event_id")
             ->get();
 
+            // 参加済みevent_idの配列
+            $attended_event_id_list = [];
             foreach ($event_list as $key => $value) {
                 $attended_event_id_list[] = $value->event_id;
             }
@@ -287,16 +297,20 @@ class UserController extends Controller
     {
         try {
             $posted_data = $request->all();
+            // 指定した、組み合わせでイベントの参加履歴を参照
             $attended_event = AttendedEvent::where("unique_user_id", $unique_user_id)
             ->where("event_id", $event_id)
             ->get()
             ->first();
+
+            // レコードが存在しない場合
             if ($attended_event === NULL) {
-                throw new \Exception("指定した参加履歴が存在しません。");
-            }
-            $result = $attended_event->fill($posted_data)->save();
-            if ($result !== true) {
-                throw new \Exception("指定した参加履歴のアップデートに失敗しました。");
+                $result = AttendedEvent::create($posted_data);
+            } else {
+                $result = $attended_event->fill($posted_data)->save();
+                if ($result !== true) {
+                    throw new \Exception("指定した参加履歴のアップデートに失敗しました。");
+                }
             }
             return redirect()->action("Admin\UserController@detail", [
                 "unique_user_id" => $unique_user_id,
@@ -341,7 +355,16 @@ class UserController extends Controller
     {
         try {
             $posted_data = $request->all();
-            // ユーザーの重複検証
+            // メールアドレスまたは電話番号のの重複チェック
+            $result = UniqueUser::where("email", $posted_data["email"])
+            ->orWhere("phone_number", $posted_data["phone_number"])
+            ->orWhere("reception_number", $posted_data["reception_number"])
+            ->get()
+            ->first();
+            if ($result !== NULL) {
+                throw new \Exception("メールアドレス[{$posted_data["email"]}]または電話番号[{$posted_data["phone_number"]}]のユーザーは既に存在します。");
+            }
+
             // ユニークユーザーの重複チェック
             $unique_user = UniqueUser::where("reception_number", "!=", $posted_data["reception_number"])
             ->where([
@@ -358,7 +381,13 @@ class UserController extends Controller
                 throw new \Exception("指定したユーザー情報が既に存在します。");
             }
             $result = UniqueUser::create($posted_data);
-            var_dump($result);
+            if ($result->id > 0) {
+                return redirect()->action("Admin\UserController@detail", [
+                    "unique_user_id" => $result->id,
+                ]);
+            } else {
+                throw new \Exception("会員情報の登録に失敗しました。");
+            }
         } catch (\Exception $e) {
             return view("error.index", [
                 "error" => $e,
@@ -367,30 +396,86 @@ class UserController extends Controller
     }
 
     /**
-     * 指定したユーザーで指定したイベントに参加させる処理
+     * 指定したユーザーの会員情報を更新する
      *
-     * @param UserRequest $request
+     * @param Request $request
      * @param Response $response
      * @param integer $unique_user_id
-     * @param integer $event_id
      * @return void
      */
-    public function attend(UserRequest $request, Response $response, int $unique_user_id, int $event_id)
+    public function update(Request $request, Response $response, int $unique_user_id)
+    {
+        try {
+            $age_list = [];
+            foreach (range(16, 100) as $key => $value) {
+                $age_list[$value] = $value."歳";
+            };
+            $gender_list = [
+                "男性" => "男性",
+                "女性" => "女性",
+            ];
+            $result = UniqueUser::findOrFail($unique_user_id);
+            if ($result === NULL) {
+                throw new \Exception ("指定したユーザーが存在しません。");
+            }
+            return view("admin.user.update", [
+                "unique_user_info" => $result,
+                "age_list" => $age_list,
+                "gender_list" => $gender_list,
+            ]);
+        } catch (\Exception $e) {
+            return view("error.index", [
+                "error" => $e,
+            ]);
+        }
+    }
+
+    public function postUpdate(UserRequest $request, Response $response, int $unique_user_id)
     {
         try {
             $posted_data = $request->all();
-            $result = AttendedEvent::where("event_id", $posted_data["event_id"])
-            ->where("unique_user_id", $posted_data["unique_user_id"])
+            // メールアドレスまたは電話番号のの重複チェック
+            $result = UniqueUser::where(function ($query) use ($posted_data) {
+                $query->where("email", $posted_data["email"])
+                ->orWhere("phone_number", $posted_data["phone_number"])
+                ->orWhere("reception_number", $posted_data["reception_number"]);
+            })
+            ->where("id", "!=", $unique_user_id)
             ->get()
             ->first();
-            // 既に当該の組み合わせでレコードが存在する場合はエラー
+
             if ($result !== NULL) {
-                // is_participatedフラグを変化
-                $result = $result->fill(["is_participated" => Config("const.participated_status.is_participated")])->save();
-                var_dump($result);
+                throw new \Exception("メールアドレス[{$posted_data["email"]}]または電話番号[{$posted_data["phone_number"]}]のユーザーは既に存在します。");
+            }
+            // ユーザーの重複検証
+            $unique_user = UniqueUser::findOrFail($unique_user_id);
+            // ユニークユーザーの重複チェック
+            $temp = UniqueUser::where("reception_number", "!=", $posted_data["reception_number"])
+            ->where([
+                ["family_name", "=", $posted_data["family_name"]],
+                ["given_name", "=", $posted_data["given_name"]],
+                ["phone_number", "=", $posted_data["phone_number"]],
+            ])->orWhere([
+                ["family_name", "=", $posted_data["family_name"]],
+                ["given_name", "=", $posted_data["given_name"]],
+                ["email", "=", $posted_data["email"]],
+            ])
+            ->where("id", "!=", $unique_user_id)
+            ->get()
+            ->first();
+            if ($temp !== NULL) {
+                throw new \Exception("指定したユーザー情報が既に存在します。");
+            }
+            var_dump($unique_user);
+            // ユーザー情報のアップデート処理
+            $result = $unique_user->fill($posted_data)->save();
+
+            if ($result) {
+                return redirect()->action("Admin\UserController@detail", [
+                    "unique_user_id" => $unique_user_id,
+                ]);
             } else {
-                $result = AttendedEvent::create($posted_data);
-                var_dump($result->id);
+                throw new \Exception("会員情報の更新処理に失敗しました。");
             }
         } catch (\Exception $e) {
             return view("error.index", [

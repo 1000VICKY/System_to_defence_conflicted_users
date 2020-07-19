@@ -1,10 +1,17 @@
 @include("admin.common.header")
+
+<div class="container brilliant-block">
+  <h2>{{$event_info->event_name}} 詳細情報</h2>
+</div>
+
 <div class="container brilliant-block">
   <ul class="list-group list-group-flush border border-secondary">
     <li class="list-group-item">イベント名「{{$event_info->event_name}}」への参加者一覧を取得</li>
     <li class="list-group-item">開催日:{{$event_info->event_start}}</li>
   </ul>
 </div>
+
+@if ($attended_unique_users->count() > 0)
 <div class="container brilliant-block">
   @foreach($attended_unique_users as $key => $value)
   <table class="table table-sm">
@@ -56,4 +63,11 @@
   </table>
   @endforeach
 </div>
+@else
+<div class="container brilliant-block">
+  <ul class="list-group list-group-flush border border-secondary">
+    <li class="list-group-item">現在当イベントへの参加者は存在しません。</li>
+  </ul>
+</div>
+@endif
 @include("admin.common.footer")

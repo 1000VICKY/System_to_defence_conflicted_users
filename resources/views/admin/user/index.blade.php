@@ -1,10 +1,11 @@
 @include("admin.common.header")
 
 <div class="container brilliant-block">
+  <h2>現在登録中のマスター会員情報一覧</h2>
+</div>
+
+<div class="container brilliant-block">
   <ul class="list-group list-group-flush border border-secondary">
-    <li class="list-group-item">
-      現在登録中のマスター会員情報一覧
-    </li>
     <li class="list-group-item">
       [参加履歴]ボタンをクリックすると
       指定したユーザーの参加履歴が閲覧できます。
@@ -16,29 +17,41 @@
   </ul>
 </div>
 
+{{ Form :: open([
+  "url" => action("Admin\UserController@index"),
+  "method" => "GET",
+])}}
 <div class="container brilliant-block">
-  {{ Form :: open([
-    "url" => action("Admin\UserController@index"),
-    "method" => "GET",
-  ])}}
   <div class="row">
     <div class="col">
+      <label>お名前</label>
       {{ Form :: input("text", "keyword", $keyword, [
-        "class" => "form-control",
+        "class" => "form-control form-control-lg",
         "id" => "keyword",
         "placeholder" => "例)ヤマダタロウ or 山田 or 太郎など"
       ])}}
     </div>
-    <div class="col"></div>
     <div class="col">
-      {{ Form :: input("submit", "search_user", "入力した名前で検索", [
-        "class" => "form-control btn btn-dark",
+      <label>メールアドレス</label>
+      {{ Form :: input("text", "email", $email, [
+        "class" => "form-control form-control-lg",
+        "id" => "email",
+        "placeholder" => "例)brilliant@gmail.com"
+      ])}}
+    </div>
+  </diV>
+</div>
+<div class="container brilliant-block">
+  <div class="row">
+    <div class="col">
+      {{ Form :: input("submit", "search_user", "入力した名前またはメールアドレスで検索", [
+        "class" => "form-control form-control-lg btn btn-dark",
         "id" => "search_user_button",
       ])}}
     </div>
   </div>
-  {{ Form :: close()}}
 </div>
+{{ Form :: close()}}
 
 <div class="container brilliant-block">
   {{$unique_user_list->links()}}

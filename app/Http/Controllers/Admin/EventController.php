@@ -108,7 +108,7 @@ class EventController extends Controller
                 $unique_user_id_list[] = $value->unique_user_id;
             }
             // 参加者のみのunique_user_id一覧
-            print_r($unique_user_id_list);
+            // print_r($unique_user_id_list);
 
             $attended_event_id_list= [];
             $contacted_users = [];
@@ -133,7 +133,7 @@ class EventController extends Controller
                     $attended_event_id_list[$_id][] = $in_value->event_id;
                 }
                 // print_r($attended_event_id_list);
-                print_r($attended_event_id_list);
+                // print_r($attended_event_id_list);
 
                 $temp = AttendedEvent::with([
                     "users"
@@ -149,6 +149,38 @@ class EventController extends Controller
                 "attended_unique_users" => $attended_unique_users,
                 "contacted_users" => $contacted_users,
                 "event_info" => $event_info,
+            ]);
+        } catch (\Exception $e) {
+            return view("error.index", [
+                "error" => $e,
+            ]);
+        }
+    }
+
+    /**
+     * これまでの全イベントへの参加履歴を表示
+     *
+     * @param Request $request
+     * @param Response $response
+     * @param integer $limit
+     * @return void
+     */
+    public function log(Request $request, Response $response, int $limit = 200)
+    {
+        try {
+            $result = AttendedEvent::with([
+                "users",
+                "events",
+            ])
+            ->whereHas("events", function ($query) {
+                $query->where("event_start", "<=", date("Y-m-d H:i:s"));
+            })
+            ->orderBy("unique_user_id", "desc")
+            ->orderBy("id", "desc")
+            ->paginate($limit);
+
+            return view("admin.event.log", [
+                "all_logs" => $result,
             ]);
         } catch (\Exception $e) {
             return view("error.index", [

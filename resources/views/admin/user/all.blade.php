@@ -1,7 +1,9 @@
 @include("admin.common.header")
+
 <div class="container brilliant-block">
-  <p>これまでに登録した全CSVデータ一覧を閲覧中</p>
+  <h2>これまでに登録した全CSVデータ一覧</h2>
 </div>
+
 <div class="container brilliant-block">
   {{$logs->links()}}
   @if ($logs->count() > 0)

@@ -73,27 +73,63 @@ class UserRequest extends FormRequest
                         "max:9",
                     ],
                     "job" => [
-                        "required",
-                        "between:1,128",
+                        // "required",
+                        "between:0,128",
                     ],
                     "gender" => [
                         "required",
-                        ""
                     ]
                 ];
-            } else if ($route_name === "admin.user.attend") {
-                print_r($this->validationData());
+            } else if ($route_name === "admin.user.postUpdate") {
+                // print_r($this->validationData());
+                // exit();
+                // 既存ユーザーの情報変更処理
                 $rules = [
                     "unique_user_id" => [
                         "required",
-                        Rule::exists("unique_users", "id")->where(function ($query) {
-                            $query->where("is_displayed", 1)
-                            ->where("is_deleted", 0);
-                        }),
+                        Rule::exists("unique_users", "id")
                     ],
-                    "event_id" => [
+                    "family_name" => [
                         "required",
-                        Rule::exists("events", "id"),
+                        "between:1, 256",
+                    ],
+                    "given_name" => [
+                        "required",
+                        "between:1, 256",
+                    ],
+                    "family_name_sort" => [
+                        "required",
+                        "between:1, 256",
+                    ],
+                    "given_name_sort" => [
+                        "required",
+                        "between:1, 256",
+                    ],
+                    "age" => [
+                        "required",
+                        "integer",
+                        "min:16",
+                        "max:100",
+                    ],
+                    "phone_number" => [
+                        "required",
+                        "between:10,20",
+                    ],
+                    "email" => [
+                        "required",
+                        "email:rfc",
+                    ],
+                    "reception_number" => [
+                        "required",
+                        "min:9",
+                        "max:9",
+                    ],
+                    "job" => [
+                        // "required",
+                        "between:0,128",
+                    ],
+                    "gender" => [
+                        "required",
                     ]
                 ];
             }

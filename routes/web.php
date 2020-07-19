@@ -22,6 +22,7 @@ Route::get("/admin/import", "Admin\ImportController@index");
 Route::post("/admin/import/upload", "Admin\ImportController@upload");
 
 // ユニークな会員一覧画面
+Route::get("/admin/user/index/{limit}", "Admin\UserController@index");
 Route::get("/admin/user/index", "Admin\UserController@index");
 Route::get("/admin/user", "Admin\UserController@index");
 Route::get("/admin/user/detail/{unique_user_id}", "Admin\UserController@detail");
@@ -31,10 +32,13 @@ Route::post("/admin/user/participate/{unique_user_id}/{event_id}", "Admin\UserCo
 ->name("admin.user.participated");
 Route::get("/admin/user/create", "Admin\UserController@create");
 Route::post("/admin/user/create", "Admin\UserController@postCreate")->name("admin.user.postCreate");
-Route::post("/admin/user/attend/{unique_user_id}/{event_id}", "Admin\UserController@attend")->name("admin.user.attend");
+Route::get("/admin/user/update/{unique_user_id}", "Admin\UserController@update");
+Route::post("/admin/user/update/{unique_user_id}", "Admin\UserController@postUpdate")->name("admin.user.postUpdate");
 
 
 // ユニークなイベント一覧画面
 Route::get("/admin/event/index", "Admin\EventController@index");
 Route::get("/admin/event", "Admin\EventController@index");
 Route::get("/admin/event/{event_id}", "Admin\EventController@detail");
+Route::get("/admin/event/log/{limit}", "Admin\EventController@log");
+Route::get("/admin/event/log", "Admin\EventController@log");

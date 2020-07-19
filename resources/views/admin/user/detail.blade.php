@@ -1,18 +1,22 @@
 @include("admin.common.header")
 
 <div class="container brilliant-block">
+  <h2>{{$unique_user_info->family_name}} {{$unique_user_info->given_name}}さん 詳細情報</h2>
+</div>
+
+
+<div class="container brilliant-block">
   <div class="alert alert-secondary" role="alert">
     <div class="alert-heading">
-      <h4>
-        <span class="btn btn-outline-dark">{{$unique_user_info->id}}</span>
-        {{$unique_user_info->family_name}} {{$unique_user_info->given_name}}さん
-      </h4>
+      <p>現在、{{$unique_user_info->family_name}} {{$unique_user_info->given_name}}さんの詳細情報を閲覧中です。</p>
     </div>
-    <p>現在、{{$unique_user_info->family_name}} {{$unique_user_info->given_name}}さんの詳細情報を閲覧中です。</p>
     <hr>
     <p class="mb-0">
       <a href="{{action("Admin\UserController@contact", ["unique_user_id" => $unique_user_info->id])}}" class="btn btn-dark">
         {{$unique_user_info->family_name}} {{$unique_user_info->given_name}}さんの接触履歴を確認
+      </a>
+      <a href="{{action("Admin\UserController@update", ["unique_user_id" => $unique_user_info->id])}}" class="btn btn-info">
+        {{$unique_user_info->family_name}} {{$unique_user_info->given_name}}さんの会員情報を編集
       </a>
     </p>
   </div>
@@ -23,8 +27,7 @@
 <div class="container brilliant-block">
   <ul class="list-group list-group-flush border border-secondary">
     <li class="list-group-item">
-      ({{$unique_user_info->id}}){{$unique_user_info->family_name}} {{$unique_user_info->given_name}}
-      さんの参加可能な本日以降のイベント一覧
+      本日以降開催されるイベント一覧
     </li>
     <li class="list-group-item">
       参加者一覧をクリックすると、参加予定のユーザー一覧を確認できます。
@@ -59,7 +62,7 @@
         <td class="col-2"><a class="btn btn-dark" href="{{action("Admin\EventController@detail", ["event_id" => $v->id])}}">参加者一覧</a></td>
         <td class="col-1">
           {{ Form :: open([
-              "url" => action("Admin\UserController@attend", [
+              "url" => action("Admin\UserController@participate", [
                   "unique_user_id" => $unique_user_info->id,
                   "event_id" => $v->id,
                 ]),
@@ -70,6 +73,7 @@
           ])}}
           {{ Form :: input("hidden", "unique_user_id", $unique_user_info->id) }}
           {{ Form :: input("hidden", "event_id", $v->id) }}
+          {{ Form :: input("hidden", "is_participated", Config("const.participated_status.is_participated"))}}
           {{ Form :: close() }}
         </td>
       </tr>
@@ -117,27 +121,27 @@
           不参加
           @endif
         <td class="col-1">
-            {{ Form :: open([
-                "url" => action("Admin\UserController@participate", [
-                    "unique_user_id" => $unique_user_info->id,
-                    "event_id" => $v->events->id,
-                ])
-            ])}}
-            @if ((int)$v->is_participated === 1)
-            {{ Form :: input("submit", "change_participated", "参加予定", [
-                "class" => "btn btn-outline-dark",
-            ])}}
-            {{ Form :: input("hidden", "is_participated", 0)}}
-            @else
-            {{ Form :: input("submit", "change_participated", "不参加", [
-                "class" => "btn btn-outline-dark",
-            ])}}
-            {{ Form :: input("hidden", "is_participated", 1)}}
-            @endif
-            {{ Form :: input("hidden", "unique_user_id", $unique_user_info->id)}}
-            {{ Form :: input("hidden", "event_id", $v->events->id)}}
-            {{ Form :: close() }}
-          </td>
+          {{ Form :: open([
+              "url" => action("Admin\UserController@participate", [
+                  "unique_user_id" => $unique_user_info->id,
+                  "event_id" => $v->events->id,
+              ])
+          ])}}
+          @if ((int)$v->is_participated === 1)
+          {{ Form :: input("submit", "change_participated", "キャンセル", [
+              "class" => "btn btn-outline-dark",
+          ])}}
+          {{ Form :: input("hidden", "is_participated", 0)}}
+          @else
+          {{ Form :: input("submit", "change_participated", "不参加", [
+              "class" => "btn btn-outline-dark",
+          ])}}
+          {{ Form :: input("hidden", "is_participated", 1)}}
+          @endif
+          {{ Form :: input("hidden", "unique_user_id", $unique_user_info->id)}}
+          {{ Form :: input("hidden", "event_id", $v->events->id)}}
+          {{ Form :: close() }}
+        </td>
         <td class="col-2"><a class="btn btn-dark" href="{{action("Admin\EventController@detail", ["event_id" => $v->events->id])}}">参加者一覧</a></td>
       </tr>
       @endforeach

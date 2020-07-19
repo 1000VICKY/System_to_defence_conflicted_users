@@ -41,7 +41,10 @@
             <li class="nav-item">
               <a class="nav-link" href="/index.php/admin/import">CSVのインポート</a>
             </li>
-          </ul>
+            <li class="nav-item">
+              <a class="nav-link" href="/index.php/admin/event/log/100">ログ</a>
+            </li>
+        </ul>
         </div>
       </nav>
     </header>

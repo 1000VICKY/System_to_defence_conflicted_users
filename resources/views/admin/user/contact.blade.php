@@ -30,6 +30,7 @@
     </li>
   </ul>
 </div>
+@if ($contacted_user_list->count() > 0)
 <div class="container brilliant-block">
   <table class="table table-sm">
     <thead class="thead-dark">
@@ -63,4 +64,9 @@
     </tbody>
   </table>
 </div>
+@else
+<div class="container brilliant-block">
+  <p>現在、接触済みユーザーは存在しません。</p>
+</div>
+@endif
 @include("admin.common.footer")

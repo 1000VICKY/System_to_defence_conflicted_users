@@ -2,6 +2,9 @@
 @include("admin.common.header")
 
 
+<div class="container brilliant-block">
+  <h2>新規CSVファイルのインポート処理</h2>
+</div>
 
 <div class="container brilliant-block">
   {{
@@ -19,7 +22,7 @@
           "class" => "csv-file-upload form-control-file",
       ]) }}
       @if ($errors->has("csv_file"))
-        <span>{{ $errors->first("csv_file") }}</span>
+        <span class="error_validation">{{ $errors->first("csv_file") }}</span>
       @endif
     </div>
     <button type="submit" class="btn btn-primary mb-2">CSVインポートの実行</button>
