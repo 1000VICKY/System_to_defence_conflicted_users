@@ -14,9 +14,8 @@
         <th class="col-2" scope="col">氏名</th>
         <th class="col-2" scope="col">受付日時<br>CSV番号</th>
         <th class="col-3" scope="col">参加イベント名</th>
-        <th class="col-2" scope="col">TEL<br>メール</th>
+        <th class="col-3" scope="col">TEL<br>メール</th>
         <th class="col-1" scope="col">職業<br>性別</th>
-        <th class="col-1" scope="col">入金日<br>メモ</th>
     </tr>
     </thead>
     <tbody>
@@ -31,9 +30,8 @@
         </td>
         <td class="col-2">{{$value->reception_date}}<br>{{$value->reception_number}}</td>
         <td class="col-3">{{$value->event_name}}<br><hr>メモ:{{$value->question}}</td>
-        <td class="col-2">{{$value->phone_number}}<br>{{$value->email}}</td>
+        <td class="col-3">{{$value->phone_number}}<br>{{$value->email}}</td>
         <td class="col-1">{{$value->job}}<br>{{$value->gender}}</td>
-        <td class="col-1">{{$value->payment_date}}<br></td>
       </tr>
       @endforeach
     </tbody>

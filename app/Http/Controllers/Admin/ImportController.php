@@ -42,12 +42,16 @@ class ImportController extends Controller
             // ファイルオブジェクトからイテレータを取得
             $uploaded_file = $input["csv_file"]->openFile();
             // アップロードされた、CSVファイルからヘッダーのみを取得する
-            $csv_header_array = explode(",", mb_convert_encoding($uploaded_file->current(), "UTF-8", "CP932"));
+            $temp = explode(",", mb_convert_encoding($uploaded_file->current(), "UTF-8", "CP932"));
+            $csv_header_array = [];
+            foreach ($temp as $key => $value) {
+                $csv_header_array[] = trim($value);
+            }
             $regulation_header = config("const.csv_header");
 
             // インポートされたヘッダーの検証
             if (array_intersect($regulation_header, $csv_header_array) !== $regulation_header) {
-                throw new \RuntimeException("CSVヘッダーが規定とは異なります 。");
+                throw new \RuntimeException("CSVの見出しが正しく設定されていません。");
             }
 
             $headers = [];
@@ -64,6 +68,8 @@ class ImportController extends Controller
             // (1)logsテーブルへのデータ登録
             // インポートされたCSVをlogsテーブルに登録する
             while($value = $uploaded_file->current()) {
+                // 物理ファイル上の現在のindex
+                $current_index = $uploaded_file->key() + 1;
                 // イテレータをすすめる
                 $uploaded_file->next();
 
@@ -71,6 +77,11 @@ class ImportController extends Controller
                 if (array_intersect_key($headers, $value) !== $headers) {
                     continue;
                 }
+                // カンマ区切りで分割した配列要素全てにtrimをかける
+                foreach ($value as $_key => $_value) {
+                    $value[$_key] = trim($_value);
+                }
+
                 $temp = [];
                 foreach ($headers as $_key => $_value) {
                     $temp[$_value] = $value[$_key];
@@ -81,24 +92,51 @@ class ImportController extends Controller
                 if ($result->count() !== 0) {
                     continue;
                 }
+                // insertデータをバリデーションする
+                foreach ($temp as $temp_key => $temp_value) {
+                    if ($temp_key === "reception_date") {
+                        if (\DateTime::createFromFormat("Y/m/d H:i", $temp_value) === false ) {
+                            throw new \Exception("{$current_index}番目の".Config("const.csv_header")[$temp_key]."の値[{$temp_value}]を正しいフォーマット[2020/01/01 00:00]に修正して下さい");
+                        }
+                    } else if ($temp_key === "reception_number") {
+                        if (preg_match("/^[0-9]{4,5}\-[0-9]{4,5}$/", $temp_value) !== 1) {
+                            throw new \Exception("[{$current_index}番目]の".Config("const.csv_header")[$temp_key]."の値[{$temp_value}]は[0000-0000]のフォーマットで入力して下さい");
+                        }
+                    } else if ($temp_key === "gender") {
+                        if ($temp_value !== "男性" && $temp_value !== "女性") {
+                            throw new \Exception("[{$current_index}番目]の".Config("const.csv_header")[$temp_key]."の値[{$temp_value}]は[男性]か[女性]で入力して下さい");
+                        }
+                    } else if ($temp_key === "age") {
+                        if ((int)$temp_value >= 18 && (int)$temp_value <= 100) {
+                            // 条件パス
+                        } else {
+                            throw new \Exception("[{$current_index}番目]の".Config("const.csv_header")[$temp_key]."の値[{$temp_value}]は18以上100以下で入力して下さい");
+                        }
+                    } else if ($temp_key === "event_start") {
+                        if (\DateTime::createFromFormat("Y/m/d H:i", $temp_value) === false ) {
+                            throw new \Exception("[{$current_index}番目]の".Config("const.csv_header")[$temp_key]."の値[{$temp_value}]を正しいフォーマット[2020/01/01 00:00]に修正して下さい");
+                        }
+                    }
+                }
                 $result = Log::insert($temp);
                 $imported_data["logs"][] = join("｜", $temp);
             }
-
 
             // (2)unique_usersテーブルへのデータ登録
             // 全ユーザー情報から未登録のユーザーをユニークユーザーとして登録する
             $logs = Log::where("is_registered", 0)->get();
             foreach ($logs as $key => $value) {
 
-                // ユニークユーザーの重複チェック
+                // ユニークユーザーの重複チェック(カタカナはすべてひらがなに変換し、比較する)
+                $family_name = mb_convert_kana($value->family_name, "H");
+                $given_name = mb_convert_kana($value->given_name, "H");
                 $inner_response = UniqueUser::where([
-                    ["family_name", "=", $value->family_name],
-                    ["given_name", "=", $value->given_name],
+                    ["family_name", "=", $family_name],
+                    ["given_name", "=", $given_name],
                     ["phone_number", "=", $value->phone_number],
                 ])->orWhere([
-                    ["family_name", "=", $value->family_name],
-                    ["given_name", "=", $value->given_name],
+                    ["family_name", "=", $family_name],
+                    ["given_name", "=", $given_name],
                     ["email", "=", $value->email],
                 ])->get();
 
@@ -182,6 +220,9 @@ class ImportController extends Controller
                         $imported_data["attended_events"][] = join("｜", $log_data);
                     }
                 }
+            }
+            foreach ($logs as $key => $value ) {
+                $value->fill(["is_registered" => 1])->save();
             }
             DB::commit();
             return view("admin.import.upload", [

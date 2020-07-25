@@ -54,7 +54,7 @@
         <td class="col-2"><p class="btn btn-outline-dark">{{$value->id}}</p></td>
         <td class="col-4">{{$value->event_name}}</td>
         <td class="col-4">{{$value->event_start}}</td>
-        <td class="col-2"><a href="{{ action("Admin\EventController@detail", ["event_id" => $value->id]) }}" class="btn btn-dark">参加者一覧</a></td>
+        <td class="col-2"><a href="{{ action("Admin\EventController@detail", ["event_id" => $value->id, "unique_user_id" => 0]) }}" class="btn btn-dark">参加者一覧</a></td>
       </tr>
       @endforeach
     </tbody>

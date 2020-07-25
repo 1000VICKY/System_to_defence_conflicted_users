@@ -71,7 +71,11 @@
     <tbody>
       @foreach($unique_user_list as $key => $value)
       <tr @if($value->gender === "男性") class="male d-flex" @else class="d-flex female" @endif>
-        <td class="col-1"><p class="btn btn-outline-dark">{{$value->id}}</p></td>
+        <td class="col-1">
+          <a class="btn btn-outline-dark" href="{{action("Admin\UserController@update", ["unique_user_id" => $value->id])}}">
+            {{$value->id}}
+          </a>
+        </td>
         <td class="col-2">
           {{$value->family_name}} {{$value->given_name}}/{{$value->age}}歳<br>
           ({{$value->family_name_sort}} {{$value->given_name_sort}})</p>

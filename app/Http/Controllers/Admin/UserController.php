@@ -16,7 +16,10 @@ class UserController extends Controller
 
 
 
-
+    private $gender_list  = [
+        "男性" => "女性",
+        "女性" => "男性",
+    ];
 
 
     /**
@@ -27,7 +30,7 @@ class UserController extends Controller
      * @param integer $limit
      * @return void
      */
-    public function index(UserRequest $request, Response $response, $limit = 20)
+    public function index(UserRequest $request, Response $response, $limit = 200)
     {
         try {
             $parameter = $request->all();
@@ -80,7 +83,7 @@ class UserController extends Controller
      * @param Response $response
      * @return void
      */
-    public function all (UserRequest $request, Response $response, int $limit = 20)
+    public function all (UserRequest $request, Response $response, int $limit = 200)
     {
         try {
             $logs = Log::orderBy("event_start", "desc")
@@ -111,17 +114,23 @@ class UserController extends Controller
         try {
             // 現在選択中のユーザー情報を取得
             $unique_user_info = UniqueUser::findOrFail($unique_user_id);
+            if ($unique_user_info === NULL) {
+                throw new \Exception("指定したユーザーの詳細情報が取得できませんでした。");
+            }
 
             // 閲覧現時点で、参加したイベントのevent_idを取得する
-            $attended_events = AttendedEvent::with([
-                "events",
+            $attended_events = Event::with([
+                "attended_events"
             ])
-            ->whereHas("events", function ($query)  {
-                $query->where("event_start", "<=", date("Y-m-d H:i:s"));
+            ->whereHas("attended_events", function ($query) use ($unique_user_id) {
+                $query->where("is_participated", Config("const.participated_status.is_participated"))
+                ->where("unique_user_id", $unique_user_id);
             })
-            ->where("is_participated", Config("const.participated_status.is_participated"))
-            ->where("unique_user_id", $unique_user_id)
+            ->where("event_start", "<=", date("Y-m-d H:i:s"))
+            ->orderBy("event_start", "desc")
             ->get();
+            print_r($attended_events->toArray());
+            // var_dump($attended_events);
 
             /**
              * @var array $attended_events_id_list 過去の参加したevent_idの配列
@@ -130,54 +139,79 @@ class UserController extends Controller
             $attended_events_id_list = [];
             if ($attended_events->count() > 0) {
                 foreach ($attended_events as $key => $value) {
-                    $attended_events_id_list[] = $value->event_id;
+                    $attended_events_id_list[] = $value->id;
                 }
             }
-            // echo ("<pre>");
-            // print_r($attended_events_id_list);
-            // echo ("</pre>");
+            echo ("<pre>");
+            print_r($attended_events_id_list);
+            echo ("</pre>");
+
 
             // 現時点で、開催前の参加予定の未来のイベント一覧
-            $future_events = AttendedEvent::with([
-                "events",
+            $future_events = Event::with([
+                "attended_events" => function ($query) use ($unique_user_id) {
+                    $query->where("is_participated", Config("const.participated_status.is_participated"))
+                    ->where("unique_user_id", $unique_user_id);
+                },
             ])
-            ->whereHas("events", function ($query)  {
-                $query->where("event_start", ">", date("Y-m-d H:i:s"));
+            ->whereHas("attended_events", function ($query) use ($unique_user_id) {
+                $query->where("is_participated", Config("const.participated_status.is_participated"))
+                ->where("unique_user_id", $unique_user_id);
             })
-            ->where("is_participated", Config("const.participated_status.is_participated"))
-            ->where("unique_user_id", $unique_user_id)
+            ->where("event_start", ">", date("Y-m-d H:i:s"))
+            ->orderBy("event_start", "desc")
             ->get();
+            print_r($future_events->toArray());
 
-            // print_r($future_events->toArray());
 
+
+            // var_dump($attended_events_id_list);
             // 未来に参加予定のevent_idを含んだ過去の参加したevent_idの配列
             $attended_events_id_list_including_future = $attended_events_id_list;
             foreach($future_events as $key => $value) {
-                $attended_events_id_list_including_future[] = $value->event_id;
+                $attended_events_id_list_including_future[] = $value->id;
             }
 
+            print_r($attended_events_id_list_including_future);
+
+
+            $self = $this;
             // 過去の全イベントで接触したユーザーのリストを取得
             $contacted_user_id_list = [];
-            $contacted_users = AttendedEvent::with([
-                "users",
+            $contacted_users = UniqueUser::with([
+                "attended_events"
             ])
-            ->where("is_participated", Config("const.participated_status.is_participated"))
-            ->whereIn("event_id", $attended_events_id_list)
+            ->whereHas("attended_events", function ($query) use ($attended_events_id_list) {
+                $query->where("is_participated", Config("const.participated_status.is_participated"))
+                ->whereIn("event_id", $attended_events_id_list);
+            })
+            ->where("gender", $this->gender_list[$unique_user_info->gender])
             ->get();
+            print_r($contacted_users->toArray());
+
+
             foreach($contacted_users as $key => $value) {
-                $contacted_user_id_list [] = $value->users->id;
+                $contacted_user_id_list [] = $value->id;
             }
+            // print_r($contacted_user_id_list);
             // echo ("<pre>");
             // print_r(array_unique($contacted_user_id_list));
             // print_r($contacted_users->toArray());
             // echo ("</pre>");
+            // print_r($attended_events_id_list_including_future);
 
             // 現時点で、開催前の参加予定のないの未来のイベント一覧を取得する
             $not_attended_events = Event::with([
-                "attended_events",
+                "attended_events" => function ($query) {
+                    $query->where("is_participated", Config("const.participated_status.is_participated"));
+                }
             ])
+            ->whereHas("attended_events", function ($query) {
+                $query->where("is_participated", Config("const.participated_status.is_participated"));
+            })
             ->whereNotIn("id", $attended_events_id_list_including_future)
             ->where("event_start", ">", date("Y-m-d H:i:s"))
+            ->orderBy("event_start", "desc")
             ->get();
 
             // echo ("<pre>");
@@ -203,11 +237,8 @@ class UserController extends Controller
                 } else {
                     $value->percentage =  0;
                 }
-
             }
-            // print_r($not_attended_events->toArray());
             // print_r($attended_events_id_list);
-            // print_r($not_attended_events->toArray());
 
             return view("admin.user.detail", [
                 // 閲覧中のユーザー情報を取得
@@ -264,13 +295,30 @@ class UserController extends Controller
                 $attended_event_id_list[] = $value->event_id;
             }
 
+            $self = $this;
             // 自身が参加したイベントに参加した他の会員ユーザー一覧を取得
-            $contacted_user_list = AttendedEvent::with([
-                "users"
+            // $contacted_user_list = AttendedEvent::with([
+            //     "users"
+            // ])
+            // ->whereHas("users", function ($query) use ($self, $unique_user_info) {
+            //     $query->where("gender", $self->gender_list[$unique_user_info->gender]);
+            // })
+            // ->whereIn("event_id", $attended_event_id_list)
+            // ->where("is_participated", Config("const.participated_status.is_participated"))
+            // ->where("unique_user_id", "!=", $unique_user_id)
+            // ->get();
+            $contacted_user_list = UniqueUser::with([
+                "attended_events",
             ])
-            ->whereIn("event_id", $attended_event_id_list)
-            ->where("unique_user_id", "!=", $unique_user_id)
+            ->whereHas("attended_events", function ($query) use ($attended_event_id_list) {
+                $query->whereIn("event_id", $attended_event_id_list)
+                ->where("is_participated", Config("const.participated_status.is_participated"));
+            })
+            ->where("gender", $this->gender_list[$unique_user_info->gender])
+            ->where("id", "!=", $unique_user_id)
             ->get();
+            print_r($contacted_user_list->toArray());
+
 
             return view("admin.user.contact", [
                 "unique_user_info" => $unique_user_info,
@@ -435,18 +483,26 @@ class UserController extends Controller
         try {
             $posted_data = $request->all();
             // メールアドレスまたは電話番号のの重複チェック
-            $result = UniqueUser::where(function ($query) use ($posted_data) {
-                $query->where("email", $posted_data["email"])
-                ->orWhere("phone_number", $posted_data["phone_number"])
-                ->orWhere("reception_number", $posted_data["reception_number"]);
-            })
-            ->where("id", "!=", $unique_user_id)
-            ->get()
-            ->first();
+            // $result = UniqueUser::where(function ($query) use ($posted_data) {
+            //     $query->where([
+            //         ["family_name", "=", $posted_data["family_name"]],
+            //         ["given_name", "=", $posted_data["given_name"]],
+            //         ["phone_number", "=", $posted_data["phone_number"]]
+            //     ])
+            //     ->orWhere([
+            //         ["family_name", "=", $posted_data["family_name"]],
+            //         ["given_name", "=", $posted_data["given_name"]],
+            //         ["email", "=", $posted_data["email"]],
+            //     ]);
+            // })
+            // ->where("reception_number", "!=", $posted_data["reception_number"])
+            // ->where("id", "!=", $unique_user_id)
+            // ->get()
+            // ->first();
 
-            if ($result !== NULL) {
-                throw new \Exception("メールアドレス[{$posted_data["email"]}]または電話番号[{$posted_data["phone_number"]}]のユーザーは既に存在します。");
-            }
+            // if ($result !== NULL) {
+            //     throw new \Exception("お名前[{$posted_data["family_name"]} {$posted_data["given_name"]}]とメールアドレス[{$posted_data["email"]}]または電話番号[{$posted_data["phone_number"]}]のユーザーは既に存在します。");
+            // }
             // ユーザーの重複検証
             $unique_user = UniqueUser::findOrFail($unique_user_id);
             // ユニークユーザーの重複チェック
@@ -466,7 +522,6 @@ class UserController extends Controller
             if ($temp !== NULL) {
                 throw new \Exception("指定したユーザー情報が既に存在します。");
             }
-            var_dump($unique_user);
             // ユーザー情報のアップデート処理
             $result = $unique_user->fill($posted_data)->save();
 

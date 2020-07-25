@@ -20,7 +20,7 @@
   <body>
     <header>
       <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <a class="navbar-brand" href="#">ブリリアント</a>
+        <a class="navbar-brand" href="/">ブリリアント</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
@@ -42,9 +42,12 @@
               <a class="nav-link" href="/index.php/admin/import">CSVのインポート</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="/index.php/admin/event/log/100">ログ</a>
+              <a class="nav-link" href="/index.php/admin/event/log/100/0">ログ</a>
             </li>
-        </ul>
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_blank">新規ウィンドウで開く(動作不良時)</a>
+            </li>
+          </ul>
         </div>
       </nav>
     </header>

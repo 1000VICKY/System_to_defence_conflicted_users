@@ -23,7 +23,7 @@ class CreateUniqueUsersTable extends Migration
             $table->string("email", 1024);
             $table->string("job", 255)->nullable();
             $table->string("gender", 16);
-            $table->date("birth_date")->nullable();
+            // $table->date("birth_date")->nullable();
             // 年齢と生年月日は別カラムでもつ
             $table->integer("age");
             $table->tinyInteger("is_displayed")->default(1);
@@ -36,8 +36,8 @@ class CreateUniqueUsersTable extends Migration
             // ユニークキー
             $table->unique(["family_name", "given_name", "phone_number"], "family_name_given_name_phone_number");
             $table->unique(["family_name", "given_name", "email"], "family_name_given_name_email");
-            $table->unique("phone_number");
-            $table->unique("email");
+            // $table->unique("phone_number");
+            // $table->unique("email");
             $table->unique("reception_number");
         });
     }

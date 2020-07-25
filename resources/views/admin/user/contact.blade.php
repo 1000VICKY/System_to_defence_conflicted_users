@@ -9,7 +9,7 @@
         {{$unique_user_info->family_name}} {{$unique_user_info->given_name}}さん
       </h4>
     </div>
-    <p>現在、{{$unique_user_info->family_name}} {{$unique_user_info->given_name}}さんの詳細情報を閲覧中です。</p>
+    <p>現在、{{$unique_user_info->family_name}} {{$unique_user_info->given_name}}({{$unique_user_info->age}}歳/{{$unique_user_info->gender}})さんの詳細情報を閲覧中です。</p>
     <hr>
     <p class="mb-0">
       <a href="{{action("Admin\UserController@detail", ["unique_user_id" => $unique_user_info->id])}}" class="btn btn-dark">
@@ -46,19 +46,19 @@
     </thead>
     <tbody>
       @foreach($contacted_user_list as $key => $value)
-      <tr @if($value->users->gender === "男性") class="male d-flex" @else class="d-flex female" @endif>
-        <td class="col-1"><p class="btn btn-outline-dark">{{$value->users->id}}</p></td>
+      <tr @if($value->gender === "男性") class="male d-flex" @else class="d-flex female" @endif>
+        <td class="col-1"><p class="btn btn-outline-dark">{{$value->id}}</p></td>
         <td class="col-2">
           <p>
-            {{$value->users->family_name}} {{$value->users->given_name}}/{{$value->users->age}}歳<br>
-            ({{$value->users->family_name_sort}} {{$value->users->given_name_sort}})
+            {{$value->family_name}} {{$value->given_name}}/{{$value->age}}歳<br>
+            ({{$value->family_name_sort}} {{$value->given_name_sort}})
           </p>
         </td>
-        <td class="col-3">{{$value->users->phone_number}}<br>{{$value->users->email}}</td>
-        <td class="col-2">{{$value->users->job}}<br>{{$value->users->gender}}</td>
-        <td class="col-2">{{$value->users->reception_number}}</td>
-        <td class="col-1"><a href="{{action("Admin\UserController@detail", ["unique_user_id" => $value->users->id])}}" class="btn btn-dark">参加履歴</a></td>
-        <td class="col-1"><a href="{{action("Admin\UserController@contact", ["unique_user_id" => $value->users->id])}}" class="btn btn-dark">接触履歴</a></td>
+        <td class="col-3">{{$value->phone_number}}<br>{{$value->email}}</td>
+        <td class="col-2">{{$value->job}}<br>{{$value->gender}}</td>
+        <td class="col-2">{{$value->reception_number}}</td>
+        <td class="col-1"><a href="{{action("Admin\UserController@detail", ["unique_user_id" => $value->id])}}" class="btn btn-dark">参加履歴</a></td>
+        <td class="col-1"><a href="{{action("Admin\UserController@contact", ["unique_user_id" => $value->id])}}" class="btn btn-dark">接触履歴</a></td>
       </tr>
       @endforeach
     </tbody>
