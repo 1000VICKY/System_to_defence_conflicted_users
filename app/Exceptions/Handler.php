@@ -51,5 +51,9 @@ class Handler extends ExceptionHandler
     public function render($request, Throwable $exception)
     {
         return parent::render($request, $exception);
+        // renderメソッドをオーバーライド
+        return response()->view("errors.index", [
+            "error" => $exception
+        ]);
     }
 }

@@ -19,18 +19,18 @@
       <tr class="d-flex">
         <th class="col-1" scope="col">ID</th>
         <th class="col-3" scope="col">氏名</th>
-        <th class="col-3" scope="col">TEL<br>メール</th>
-        <th class="col-2" scope="col">職業<br>性別</th>
+        <th class="col-3" scope="col">TEL/メール</th>
+        <th class="col-2" scope="col">職業/性別</th>
         <th class="col-2" scope="col">CSV番号</th>
         <th class="col-1" scope="col">参加履歴</th>
       </tr>
     </thead>
     <tbody>
       <tr @if ($value->gender === "男性") class="male d-flex" @else class="female d-flex" @endif)>
-        <td class="col-1"><p class="btn btn-outline-dark">{{$value->id}}</p></td>
+        <td class="col-1"><span class="btn btn-outline-dark">{{$value->id}}</span></td>
         <td class="col-3">
-          <p>{{$value->family_name}} {{$value->given_name}}/{{$value->age}}歳<br>
-            ({{$value->family_name_sort}} {{$value->given_name_sort}})</p>
+          {{$value->family_name}} {{$value->given_name}}/{{$value->age}}歳<br>
+          ({{$value->family_name_sort}} {{$value->given_name_sort}})
         </td>
         <td class="col-3">{{$value->phone_number}}<br>{{$value->email}}</td>
         <td class="col-2">{{$value->job}}<br>{{$value->gender}}</td>

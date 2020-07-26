@@ -17,7 +17,8 @@
         <th class="col-3" scope="col">氏名</th>
         <th class="col-3" scope="col">TEL/メール</th>
         <th class="col-2" scope="col">職業/性別</th>
-        <th class="col-3" scope="col">CSV番号</th>
+        <th class="col-2" scope="col">CSV番号</th>
+        <th class="col-1" scope="col">参加履歴</th>
       </tr>
     </thead>
     <tbody>
@@ -30,8 +31,9 @@
           </td>
           <td class="col-3">{{$contact_value->phone_number}}<br>{{$contact_value->email}}</td>
           <td class="col-2">{{$contact_value->job}}<br>{{$contact_value->gender}}</td>
-          <td class="col-3">{{$contact_value->reception_number}}</td>
-      </tr>
+          <td class="col-2">{{$contact_value->reception_number}}</td>
+          <td class="col-1"><a href="{{ action("Admin\UserController@detail", ["unique_user_id" => $contact_value->id]) }}" class="btn btn-dark">参加履歴</a></td>
+        </tr>
       @endforeach
     </tbody>
   </table>

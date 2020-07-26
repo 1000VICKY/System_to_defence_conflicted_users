@@ -70,7 +70,7 @@ class EventController extends Controller
                 "event_list" => $event_list,
             ]);
         } catch (\Exception $e) {
-            return view("error.index", [
+            return view("errors.index", [
                 "error" => $e,
             ]);
         }
@@ -162,7 +162,7 @@ class EventController extends Controller
                     ->where("is_participated", Config("const.participated_status.is_participated"));
                 })
                 ->get();
-                print_r($temp->toArray());
+                // print_r($temp->toArray());
                 $contacted_users[$_id] = $temp;
             }
 
@@ -183,7 +183,7 @@ class EventController extends Controller
                 "unique_user_info" => $unique_user_info,
             ]);
         } catch (\Exception $e) {
-            return view("error.index", [
+            return view("errors.index", [
                 "error" => $e,
             ]);
         }
@@ -197,7 +197,7 @@ class EventController extends Controller
      * @param integer $limit
      * @return void
      */
-    public function log(Request $request, Response $response, int $limit = 200)
+    public function log(Request $request, Response $response, int $limit = 200, int $unique_user_id = 0)
     {
         try {
             $result = AttendedEvent::with([
@@ -207,6 +207,11 @@ class EventController extends Controller
             ->whereHas("events", function ($query) {
                 $query->where("event_start", "<=", date("Y-m-d H:i:s"));
             })
+            ->whereHas("users", function ($query) use ($unique_user_id) {
+                if ($unique_user_id > 0) {
+                    $query->where("id", $unique_user_id);
+                }
+            })
             ->orderBy("unique_user_id", "desc")
             ->orderBy("id", "desc")
             ->paginate($limit);
@@ -215,7 +220,7 @@ class EventController extends Controller
                 "all_logs" => $result,
             ]);
         } catch (\Exception $e) {
-            return view("error.index", [
+            return view("errors.index", [
                 "error" => $e,
             ]);
         }

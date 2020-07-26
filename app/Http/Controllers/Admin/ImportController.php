@@ -50,6 +50,9 @@ class ImportController extends Controller
             $regulation_header = config("const.csv_header");
 
             // インポートされたヘッダーの検証
+            print_r($regulation_header);
+            print_r($csv_header_array);
+            print_r(array_intersect($regulation_header, $csv_header_array));
             if (array_intersect($regulation_header, $csv_header_array) !== $regulation_header) {
                 throw new \RuntimeException("CSVの見出しが正しく設定されていません。");
             }
@@ -99,7 +102,7 @@ class ImportController extends Controller
                             throw new \Exception("{$current_index}番目の".Config("const.csv_header")[$temp_key]."の値[{$temp_value}]を正しいフォーマット[2020/01/01 00:00]に修正して下さい");
                         }
                     } else if ($temp_key === "reception_number") {
-                        if (preg_match("/^[0-9]{4,5}\-[0-9]{4,5}$/", $temp_value) !== 1) {
+                        if (preg_match("/^[0-9]{4,5}\-[0-9]{4,10}$/", $temp_value) !== 1) {
                             throw new \Exception("[{$current_index}番目]の".Config("const.csv_header")[$temp_key]."の値[{$temp_value}]は[0000-0000]のフォーマットで入力して下さい");
                         }
                     } else if ($temp_key === "gender") {
@@ -233,13 +236,13 @@ class ImportController extends Controller
         } catch(\RuntimeException $e) {
             // RuntimeExceptionはDBロジックの外で実行させる
             // エラーページを表示させる
-            return view("error.index", [
+            return view("errors.index", [
                 "error" => $e,
             ]);
         } catch(\Exception $e) {
             DB::rollback();
             // エラーページを表示させる
-            return view("error.index", [
+            return view("errors.index", [
                 "error" => $e,
             ]);
         }

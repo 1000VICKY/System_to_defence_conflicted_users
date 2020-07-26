@@ -69,7 +69,7 @@ class UserController extends Controller
             ]);
         } catch (\Exception $e) {
             // エラー画面
-            return view("error.index", [
+            return view("errors.index", [
                 "error" => $e,
             ]);
         }
@@ -94,7 +94,7 @@ class UserController extends Controller
             ]);
         } catch (\Exception $e) {
            // エラー画面
-            return view("error.index", [
+            return view("errors.index", [
             "error" => $e,
             ]);
         }
@@ -113,7 +113,7 @@ class UserController extends Controller
     {
         try {
             // 現在選択中のユーザー情報を取得
-            $unique_user_info = UniqueUser::findOrFail($unique_user_id);
+            $unique_user_info = UniqueUser::find($unique_user_id);
             if ($unique_user_info === NULL) {
                 throw new \Exception("指定したユーザーの詳細情報が取得できませんでした。");
             }
@@ -129,22 +129,19 @@ class UserController extends Controller
             ->where("event_start", "<=", date("Y-m-d H:i:s"))
             ->orderBy("event_start", "desc")
             ->get();
-            print_r($attended_events->toArray());
+
             // var_dump($attended_events);
 
-            /**
-             * @var array $attended_events_id_list 過去の参加したevent_idの配列
-             * そのため未来に参加予定のevent_idは含まない
-             */
+            // 参加済みのevent_idの配列(※未来のevent_idは含まない)
             $attended_events_id_list = [];
             if ($attended_events->count() > 0) {
                 foreach ($attended_events as $key => $value) {
                     $attended_events_id_list[] = $value->id;
                 }
             }
-            echo ("<pre>");
-            print_r($attended_events_id_list);
-            echo ("</pre>");
+            // echo ("<pre>");
+            // print_r($attended_events_id_list);
+            // echo ("</pre>");
 
 
             // 現時点で、開催前の参加予定の未来のイベント一覧
@@ -161,7 +158,7 @@ class UserController extends Controller
             ->where("event_start", ">", date("Y-m-d H:i:s"))
             ->orderBy("event_start", "desc")
             ->get();
-            print_r($future_events->toArray());
+            // print_r($future_events->toArray());
 
 
 
@@ -171,8 +168,7 @@ class UserController extends Controller
             foreach($future_events as $key => $value) {
                 $attended_events_id_list_including_future[] = $value->id;
             }
-
-            print_r($attended_events_id_list_including_future);
+            // print_r($attended_events_id_list_including_future);
 
 
             $self = $this;
@@ -187,7 +183,7 @@ class UserController extends Controller
             })
             ->where("gender", $this->gender_list[$unique_user_info->gender])
             ->get();
-            print_r($contacted_users->toArray());
+            // print_r($contacted_users->toArray());
 
 
             foreach($contacted_users as $key => $value) {
@@ -252,7 +248,7 @@ class UserController extends Controller
             ]);
         } catch (\Exception $e) {
             // エラー画面
-            return view("error.index", [
+            return view("errors.index", [
                 "error" => $e,
             ]);
         }
@@ -317,7 +313,7 @@ class UserController extends Controller
             ->where("gender", $this->gender_list[$unique_user_info->gender])
             ->where("id", "!=", $unique_user_id)
             ->get();
-            print_r($contacted_user_list->toArray());
+            // print_r($contacted_user_list->toArray());
 
 
             return view("admin.user.contact", [
@@ -326,7 +322,7 @@ class UserController extends Controller
             ]);
         } catch (\Exception $e) {
             // エラー画面
-            return view("error.index", [
+            return view("errors.index", [
                 "error" => $e,
             ]);
         }
@@ -393,7 +389,7 @@ class UserController extends Controller
                 "gender_list" => $gender_list,
             ]);
         } catch (\Exception $e) {
-            return view("error.index", [
+            return view("errors.index", [
                 "error" => $e,
             ]);
         }
@@ -437,7 +433,7 @@ class UserController extends Controller
                 throw new \Exception("会員情報の登録に失敗しました。");
             }
         } catch (\Exception $e) {
-            return view("error.index", [
+            return view("errors.index", [
                 "error" => $e,
             ]);
         }
@@ -472,7 +468,7 @@ class UserController extends Controller
                 "gender_list" => $gender_list,
             ]);
         } catch (\Exception $e) {
-            return view("error.index", [
+            return view("errors.index", [
                 "error" => $e,
             ]);
         }
@@ -533,7 +529,7 @@ class UserController extends Controller
                 throw new \Exception("会員情報の更新処理に失敗しました。");
             }
         } catch (\Exception $e) {
-            return view("error.index", [
+            return view("errors.index", [
                 "error" => $e,
             ]);
         }

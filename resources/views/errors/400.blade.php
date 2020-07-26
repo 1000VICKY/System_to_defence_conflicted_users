@@ -3,9 +3,10 @@
   <div class="row justify-content-center">
     <div class="col-8">
       <div class="alert alert-danger" role="alert">
-        <p>{{ $error->getMessage() }}</p>
-        <p>{{ $error->getLine() }}</p>
-        <p>{{ $error->getFile() }}</p>
+        <p>{{ $errors}}</p>
+        {{-- <p>{{ $errors->getMessage() }}</p>
+        <p>{{ $errors->getLine() }}</p>
+        <p>{{ $errors->getFile() }}</p> --}}
       </div>
     </div>
   </div>

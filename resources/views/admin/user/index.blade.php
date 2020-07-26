@@ -54,7 +54,7 @@
 {{ Form :: close()}}
 
 <div class="container brilliant-block">
-  {{$unique_user_list->links()}}
+  {{$unique_user_list->appends(["email" => $email, "keyword" => $keyword])->links()}}
   @if ($unique_user_list->count() > 0)
   <table class="table table-sm">
     <thead class="thead-dark">

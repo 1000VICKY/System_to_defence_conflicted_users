@@ -20,6 +20,9 @@
       <a href="{{action("Admin\UserController@update", ["unique_user_id" => $unique_user_info->id])}}" class="btn btn-info">
         {{$unique_user_info->family_name}} {{$unique_user_info->given_name}}さんの会員情報を編集
       </a>
+      <a href="{{action("Admin\EventController@log", ["limit" => 100, "unique_user_id" => $unique_user_info->id])}}" class="btn btn-warning">
+        {{$unique_user_info->family_name}} {{$unique_user_info->given_name}}さんのログ一覧(イベント参加記録を復活させる場合)
+      </a>
     </p>
   </div>
 </div>
@@ -44,7 +47,7 @@
         <th class="col-1" scope="col">イベントID</th>
         <th class="col-4" scope="col">イベント名</th>
         <th class="col-2" scope="col">イベント開始日時</th>
-        <th class="col-1" scope="col">衝突率</th>
+        <th class="col-1" scope="col">衝突率<small>(※)</small></th>
         <th class="col-1" scope="col">参加予定</th>
         <th class="col-2" scope="col">参加者詳細</th>
         <th class="col-1" scope="col">参加する</th>
@@ -53,7 +56,7 @@
     <tbody>
       @foreach ($not_attended_events as $k => $v)
       <tr class="d-flex">
-        <td class="col-1"><p class="btn btn-outline-dark">{{$v->id}}</p></td>
+        <td class="col-1"><a href="{{ action("Admin\\EventController@detail", ["event_id" => $v->id, "unique_user_id" => 0]) }}" class="btn btn-outline-dark">{{$v->id}}</a></td>
         <td class="col-4">{{$v->event_name}}</td>
         <td class="col-2">{{$v->event_start}}</td>
         <td class="col-1">
@@ -82,6 +85,7 @@
       @endforeach
     </tbody>
   </table>
+  <p>(※衝突率に関しては、<?php print(date("Y年m月d日 H時i分")); ?>現在までの接触ユーザーのみが対象となります。)</p>
 </div>
 @endif
 
@@ -113,7 +117,7 @@
     <tbody>
       @foreach ($future_events as $k => $v)
       <tr class="d-flex">
-        <td class="col-1"><p class="btn btn-outline-dark">{{$v->id}}</p></td>
+        <td class="col-1"><a href="{{ action("Admin\\EventController@detail", ["event_id" => $v->id, "unique_user_id" => 0]) }}" class="btn btn-outline-dark">{{$v->id}}</a></td>
         <td class="col-4">{{$v->event_name}}</td>
         <td class="col-3">{{$v->event_start}}</td>
         <td class="col-1">
@@ -149,7 +153,7 @@
       @endforeach
       @foreach ($attended_events as $k => $v)
       <tr class="d-flex past-event-row">
-        <td class="col-1"><p class="btn btn-outline-dark">{{$v->id}}</p></td>
+        <td class="col-1"><a href="{{ action("Admin\\EventController@detail", ["event_id" => $v->id, "unique_user_id" => 0]) }}" class="btn btn-outline-dark">{{$v->id}}</a></td>
         <td class="col-4">{{$v->event_name}}</td>
         <td class="col-3">{{$v->event_start}}</td>
         <td class="col-1">
