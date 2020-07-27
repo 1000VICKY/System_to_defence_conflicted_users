@@ -8,7 +8,8 @@
         });
       })
       flatpickr("#event_start", {
-        dateFormat: "Y-m-d"
+        dateFormat: "Y-m-d",
+        locale: "ja",
       });
     </script>
   </body>

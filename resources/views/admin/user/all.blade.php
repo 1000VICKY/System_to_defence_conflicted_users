@@ -12,10 +12,10 @@
       <tr class="d-flex">
         <th class="col-1" scope="col">ID</th>
         <th class="col-2" scope="col">氏名</th>
-        <th class="col-2" scope="col">受付日時<br>CSV番号</th>
+        <th class="col-2" scope="col">受付日時/CSV番号</th>
         <th class="col-3" scope="col">参加イベント名</th>
-        <th class="col-3" scope="col">TEL<br>メール</th>
-        <th class="col-1" scope="col">職業<br>性別</th>
+        <th class="col-3" scope="col">TEL/メール</th>
+        <th class="col-1" scope="col">職業/性別</th>
     </tr>
     </thead>
     <tbody>

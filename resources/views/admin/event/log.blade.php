@@ -12,9 +12,9 @@
       <tr class="d-flex">
         <th class="col-1" scope="col">会員ID</th>
         <th class="col-2" scope="col">会員名</th>
-        <th class="col-2" scope="col">電話番号<br>email</th>
+        <th class="col-2" scope="col">電話番号/email</th>
         <th class="col-2" scope="col">イベント名</th>
-        <th class="col-2" scope="col">イベント開始日時<br>CSV番号</th>
+        <th class="col-2" scope="col">イベント開始日時/CSV番号</th>
         <th class="col-1" scope="col">参加状態</th>
         <th class="col-1" scope="col">変更</th>
         <th class="col-1" scope="col">詳細</th>

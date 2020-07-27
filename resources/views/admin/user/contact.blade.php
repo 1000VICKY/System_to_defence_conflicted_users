@@ -9,7 +9,7 @@
         {{$unique_user_info->family_name}} {{$unique_user_info->given_name}}さん
       </h4>
     </div>
-    <p>現在、{{$unique_user_info->family_name}} {{$unique_user_info->given_name}}({{$unique_user_info->age}}歳/{{$unique_user_info->gender}})さんの詳細情報を閲覧中です。</p>
+    <p>現在、{{$unique_user_info->family_name}} {{$unique_user_info->given_name}}({{$unique_user_info->age}}歳/{{$unique_user_info->gender}})さんの接触履歴を閲覧中です。</p>
     <hr>
     <p class="mb-0">
       <a href="{{action("Admin\UserController@detail", ["unique_user_id" => $unique_user_info->id])}}" class="btn btn-dark">
@@ -19,17 +19,6 @@
   </div>
 </div>
 
-<div class="container brilliant-block">
-  <ul class="list-group list-group-flush border border-secondary">
-    <li class="list-group-item">
-      ({{$unique_user_info->id}}){{$unique_user_info->family_name}} {{$unique_user_info->given_name}}
-      さんがこれまでに同席したユーザー一覧となります。
-    </li>
-    <li class="list-group-item">
-      参加者一覧をクリックすると、参加予定のユーザー一覧を確認できます。
-    </li>
-  </ul>
-</div>
 @if ($contacted_user_list->count() > 0)
 <div class="container brilliant-block">
   <table class="table table-sm">
@@ -37,8 +26,8 @@
       <tr class="d-flex">
         <th class="col-1" scope="col">ID</th>
         <th class="col-2" scope="col">氏名</th>
-        <th class="col-3" scope="col">TEL<br>メール</th>
-        <th class="col-2" scope="col">職業<br>性別</th>
+        <th class="col-3" scope="col">TEL/メール</th>
+        <th class="col-2" scope="col">職業/性別</th>
         <th class="col-2" scope="col">CSV番号</th>
         <th class="col-1" scope="col">詳細ボタン</th>
         <th class="col-1" scope="col">接触履歴</th>

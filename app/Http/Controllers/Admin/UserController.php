@@ -198,17 +198,18 @@ class UserController extends Controller
 
             // 現時点で、開催前の参加予定のないの未来のイベント一覧を取得する
             $not_attended_events = Event::with([
-                "attended_events" => function ($query) {
-                    $query->where("is_participated", Config("const.participated_status.is_participated"));
-                }
+                // "attended_events" => function ($query) {
+                //     // $query->where("is_participated", Config("const.participated_status.is_participated"));
+                // }
             ])
-            ->whereHas("attended_events", function ($query) {
-                $query->where("is_participated", Config("const.participated_status.is_participated"));
-            })
+            // ->whereHas("attended_events", function ($query) {
+            //     // $query->where("is_participated", Config("const.participated_status.is_participated"));
+            // })
             ->whereNotIn("id", $attended_events_id_list_including_future)
             ->where("event_start", ">", date("Y-m-d H:i:s"))
             ->orderBy("event_start", "desc")
             ->get();
+            print_r($not_attended_events->toArray());
 
             // echo ("<pre>");
             // print_r($not_attended_events->toArray());
@@ -268,7 +269,7 @@ class UserController extends Controller
     {
         try {
             // 閲覧中のユーザー情報を取得
-            $unique_user_info = UniqueUser::findOrFail($unique_user_id);
+            $unique_user_info = UniqueUser::find($unique_user_id);
             if ($unique_user_info === NULL) {
                 throw new \Exception("指定した会員情報がみつかりません。");
             }
@@ -291,7 +292,7 @@ class UserController extends Controller
                 $attended_event_id_list[] = $value->event_id;
             }
 
-            $self = $this;
+            // $self = $this;
             // 自身が参加したイベントに参加した他の会員ユーザー一覧を取得
             // $contacted_user_list = AttendedEvent::with([
             //     "users"

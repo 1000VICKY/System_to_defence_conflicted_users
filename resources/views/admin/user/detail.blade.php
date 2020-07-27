@@ -47,7 +47,7 @@
         <th class="col-1" scope="col">イベントID</th>
         <th class="col-4" scope="col">イベント名</th>
         <th class="col-2" scope="col">イベント開始日時</th>
-        <th class="col-1" scope="col">衝突率<small>(※)</small></th>
+        <th class="col-1" scope="col">衝突率<small>(※1)</small></th>
         <th class="col-1" scope="col">参加予定</th>
         <th class="col-2" scope="col">参加者詳細</th>
         <th class="col-1" scope="col">参加する</th>
@@ -62,6 +62,7 @@
         <td class="col-1">
           {{$v->percentage}}%<br>
           ({{$v->numerator}}人/{{$v->denominator}}人中)
+          <small>(※2)</small>
         </td>
         <td class="col-1">予定なし</td>
         <td class="col-2"><a class="btn btn-dark" href="{{action("Admin\EventController@detail", ["event_id" => $v->id, "unique_user_id" => 0])}}">参加者一覧</a></td>
@@ -85,7 +86,8 @@
       @endforeach
     </tbody>
   </table>
-  <p>(※衝突率に関しては、<?php print(date("Y年m月d日 H時i分")); ?>現在までの接触ユーザーのみが対象となります。)</p>
+  <p><small>(※1 衝突率に関しては、<?php print(date("Y年m月d日 H時i分")); ?>現在までの接触ユーザーのみが対象となります。)</small></p>
+  <p><small>(※2 衝突率 = 接触のある会員の参加人数 / これまで接触のある会員数の合計)</small></p>
 </div>
 @endif
 
