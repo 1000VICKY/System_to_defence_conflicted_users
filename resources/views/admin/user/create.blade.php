@@ -99,6 +99,7 @@
         "id" => "phone_number",
         "placeholder" => "例)090-0000-0000"
       ])}}
+      <span>※電話番号はevent-formの仕様に則って下さい。例=>9012345678など</span>
     </div>
     <div class="col form-group">
       <label>メールアドレス</label>

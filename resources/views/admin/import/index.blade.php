@@ -29,4 +29,14 @@
   </form>
 </div>
 
+<div class="container brilliant-block">
+  <p>バッティング検証に必要なデータは以下一覧です<br><small>全て、必須項目となります。</small></p>
+  <div class="row">
+    @foreach ($required_header as $key => $value)
+    <div class="col-3">
+      <p class="btn btn-outline-dark">{{$value}}</p>
+    </div>
+    @endforeach
+  </div>
+</div>
 @include("admin.common.footer")

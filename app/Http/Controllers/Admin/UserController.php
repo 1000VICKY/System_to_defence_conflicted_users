@@ -209,7 +209,7 @@ class UserController extends Controller
             ->where("event_start", ">", date("Y-m-d H:i:s"))
             ->orderBy("event_start", "desc")
             ->get();
-            print_r($not_attended_events->toArray());
+            //print_r($not_attended_events->toArray());
 
             // echo ("<pre>");
             // print_r($not_attended_events->toArray());

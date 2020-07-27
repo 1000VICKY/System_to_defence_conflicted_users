@@ -70,7 +70,7 @@ class UserRequest extends FormRequest
                     "reception_number" => [
                         "required",
                         "min:9",
-                        "max:9",
+                        "max:15",
                     ],
                     "job" => [
                         // "required",

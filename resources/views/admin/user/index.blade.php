@@ -84,10 +84,10 @@
         <td class="col-2">{{$value->job}}<br>{{$value->gender}}</td>
         <td class="col-2">{{$value->reception_number}}</td>
         <td class="col-1">
-          <p><a href="{{action("Admin\UserController@detail", ["unique_user_id" => $value->id])}}" class="btn btn-dark">参加履歴</a></p>
+          <a href="{{action("Admin\UserController@detail", ["unique_user_id" => $value->id])}}" class="btn btn-dark">参加履歴</a>
         </td>
         <td class="col-1">
-          <p><a href="{{action("Admin\UserController@contact", ["unique_user_id" => $value->id])}}" class="btn btn-dark">接触履歴</a></p>
+          <a href="{{action("Admin\UserController@contact", ["unique_user_id" => $value->id])}}" class="btn btn-dark">接触履歴</a>
         </td>
       </tr>
       @endforeach

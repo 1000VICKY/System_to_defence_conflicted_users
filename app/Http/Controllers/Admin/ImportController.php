@@ -28,7 +28,10 @@ class ImportController extends Controller
      */
     public function index(ImportRequest $request, Response $response)
     {
-        return view("admin.import.index", []);
+        $required_header = Config("const.csv_header");
+        return view("admin.import.index", [
+            "required_header" => $required_header
+        ]);
     }
 
 
@@ -50,9 +53,9 @@ class ImportController extends Controller
             $regulation_header = config("const.csv_header");
 
             // インポートされたヘッダーの検証
-            print_r($regulation_header);
-            print_r($csv_header_array);
-            print_r(array_intersect($regulation_header, $csv_header_array));
+            //print_r($regulation_header);
+            //print_r($csv_header_array);
+            //print_r(array_intersect($regulation_header, $csv_header_array));
             if (array_intersect($regulation_header, $csv_header_array) !== $regulation_header) {
                 throw new \RuntimeException("CSVの見出しが正しく設定されていません。");
             }
