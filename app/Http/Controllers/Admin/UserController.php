@@ -361,7 +361,7 @@ class UserController extends Controller
                 "unique_user_id" => $unique_user_id,
             ]);
         } catch (\Exception $e) {
-            return view("error.index", [
+            return view("errors.index", [
                 "error" => $e,
             ]);
         }
@@ -530,6 +530,52 @@ class UserController extends Controller
                 throw new \Exception("会員情報の更新処理に失敗しました。");
             }
         } catch (\Exception $e) {
+            return view("errors.index", [
+                "error" => $e,
+            ]);
+        }
+    }
+
+    /**
+     * 指定したユーザー情報を物理削除する
+     * 関連テーブル3つ全て削除が成功した場合のみcommitする
+     *
+     * @param UserRequest $request
+     * @param Response $response
+     * @param integer $unique_user_id
+     * @return void
+     */
+    public function delete (UserRequest $request, Response $response, int $unique_user_id)
+    {
+        try {
+            DB::beginTransaction();
+            // POSTデータの取得
+            $posted_data = $request->all();
+            $unique_user_id = $posted_data["unique_user_id"];
+
+            // (1)ユーザーのマスター情報を削除
+            $result = UniqueUser::destroy($unique_user_id);
+            if ($result !== 1) {
+                throw new \Exception ("指定したユーザーのマスターデータの削除に失敗しました。");
+            }
+            // (2)ユーザの参加履歴を削除
+            $attended_events = AttendedEvent::where("unique_user_id", $unique_user_id);
+            $result = $attended_events->delete();
+            if ($result === 0) {
+                throw new \Exception ("指定したユーザーの参加履歴データの削除に失敗しました。");
+            }
+            // (3)CSVのログデータの削除
+            $logs = Log::where("unique_user_id", $unique_user_id);
+            $result = $logs ->delete();
+            if ($result === 0) {
+                throw new \Exception ("指定したユーザーのログデータの削除に失敗しました。");
+            }
+            // コミット
+            DB::commit();
+            // 関連テーブルを全て削除成功したら、再度ユーザー一覧画面に遷移する
+            return redirect()->action("Admin\UserController@index");
+        } catch (\Exception $e) {
+            DB::rollback();
             return view("errors.index", [
                 "error" => $e,
             ]);

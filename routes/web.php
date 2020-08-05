@@ -33,7 +33,7 @@ Route::get("/admin/user/create", "Admin\UserController@create");
 Route::post("/admin/user/create", "Admin\UserController@postCreate")->name("admin.user.postCreate");
 Route::get("/admin/user/update/{unique_user_id}", "Admin\UserController@update");
 Route::post("/admin/user/update/{unique_user_id}", "Admin\UserController@postUpdate")->name("admin.user.postUpdate");
-
+Route::post("/admin/user/delete/{unique_user_id}", "Admin\UserController@delete")->name("admin.user.delete");
 
 // ユニークなイベント一覧画面
 Route::get("/admin/event/index", "Admin\EventController@index");

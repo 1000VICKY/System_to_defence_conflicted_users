@@ -61,12 +61,13 @@
       <tr class="d-flex">
         <th class="col-1" scope="col">ID</th>
         <th class="col-2" scope="col">氏名</th>
-        <th class="col-3" scope="col">TEL/メール</th>
+        <th class="col-2" scope="col">TEL/メール</th>
         <th class="col-2" scope="col">職業/性別</th>
         <th class="col-2" scope="col">CSV番号</th>
         <th class="col-1" scope="col">詳細ボタン</th>
         <th class="col-1" scope="col">接触履歴</th>
-    </tr>
+        <th class="col-1" scope="col">削除</th>
+      </tr>
     </thead>
     <tbody>
       @foreach($unique_user_list as $key => $value)
@@ -80,7 +81,7 @@
           {{$value->family_name}} {{$value->given_name}}/{{$value->age}}歳<br>
           ({{$value->family_name_sort}} {{$value->given_name_sort}})</p>
         </td>
-        <td class="col-3">{{$value->phone_number}}<br>{{$value->email}}</td>
+        <td class="col-2">{{$value->phone_number}}<br>{{$value->email}}</td>
         <td class="col-2">{{$value->job}}<br>{{$value->gender}}</td>
         <td class="col-2">{{$value->reception_number}}</td>
         <td class="col-1">
@@ -88,6 +89,20 @@
         </td>
         <td class="col-1">
           <a href="{{action("Admin\UserController@contact", ["unique_user_id" => $value->id])}}" class="btn btn-dark">接触履歴</a>
+        </td>
+        <td class="col-1">
+          {{Form::open([
+            "url" => action("Admin\UserController@delete", [
+                "unique_user_id" => $value->id,
+            ]),
+            "method" => "POST",
+            "class" => "delete-form",
+          ])}}
+          {{ Form::input("hidden", "unique_user_id", $value->id) }}
+          {{ Form::input("button", "", "削除", [
+              "class" => "btn btn-danger delete-button",
+          ])}}
+          {{ Form :: close()}}
         </td>
       </tr>
       @endforeach
@@ -97,4 +112,16 @@
   <p>マスター会員データが存在しません。</p>
   @endif
 </div>
+<script>
+    $(function (e) {
+        // 削除ボタン押下時、アラートボックスで注意をうながす
+        $(".delete-button").each(function(index) {
+            $(this).on("click", function (e) {
+                if (confirm("指定した、ユーザー情報を削除します。もとには戻せません、よろしいですか?")) {
+                    $(".delete-form").eq(index).trigger("submit");
+                }
+            });
+        });
+    });
+</script>
 @include("admin.common.footer")

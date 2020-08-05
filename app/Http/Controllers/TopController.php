@@ -33,7 +33,7 @@ class TopController extends Controller
 
             ]);
         } catch (\Exception $e) {
-            return view("error.index", [
+            return view("errors.index", [
                 "error" => $e,
             ]);
         }

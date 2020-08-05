@@ -132,6 +132,13 @@ class UserRequest extends FormRequest
                         "required",
                     ]
                 ];
+            } else if ($route_name === "admin.user.delete") {
+                $rules = [
+                    "unique_user_id" => [
+                        "required",
+                        Rule::exists("unique_users", "id")
+                    ],
+                ];
             }
         }
         return $rules;
