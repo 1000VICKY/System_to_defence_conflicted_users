@@ -22,15 +22,7 @@ class TopController extends Controller
     public function index(Request $request, Response $response)
     {
         try {
-            $result = UniqueUser::with([
-                "logs"
-            ])
-            ->orderBy("id", "desc")
-            ->get();
-
-
             return view("index", [
-
             ]);
         } catch (\Exception $e) {
             return view("errors.index", [

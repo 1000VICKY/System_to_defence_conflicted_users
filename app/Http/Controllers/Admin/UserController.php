@@ -551,31 +551,41 @@ class UserController extends Controller
             DB::beginTransaction();
             // POSTデータの取得
             $posted_data = $request->all();
+            if (array_key_exists("unique_user_id", $posted_data) !== true) {
+                throw new \Exception("This was invalid POST data.");
+            }
             $unique_user_id = $posted_data["unique_user_id"];
 
             // (1)ユーザーのマスター情報を削除
             $result = UniqueUser::destroy($unique_user_id);
             if ($result !== 1) {
+                // プライマリキーで削除するため、戻り地は必ず1
                 throw new \Exception ("指定したユーザーのマスターデータの削除に失敗しました。");
             }
+
             // (2)ユーザの参加履歴を削除
             $attended_events = AttendedEvent::where("unique_user_id", $unique_user_id);
             $result = $attended_events->delete();
-            if ($result === 0) {
+            if (is_numeric($result) !== true) {
+                // 戻り地は削除されたレコード件数
                 throw new \Exception ("指定したユーザーの参加履歴データの削除に失敗しました。");
             }
+
             // (3)CSVのログデータの削除
             $logs = Log::where("unique_user_id", $unique_user_id);
             $result = $logs ->delete();
-            if ($result === 0) {
+            if (is_numeric($result) !== true) {
+                // 戻り地は削除されたレコード件数
                 throw new \Exception ("指定したユーザーのログデータの削除に失敗しました。");
             }
+
             // コミット
             DB::commit();
             // 関連テーブルを全て削除成功したら、再度ユーザー一覧画面に遷移する
             return redirect()->action("Admin\UserController@index");
         } catch (\Exception $e) {
             DB::rollback();
+            logger()->error($e);
             return view("errors.index", [
                 "error" => $e,
             ]);

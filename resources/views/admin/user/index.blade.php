@@ -99,7 +99,7 @@
             "class" => "delete-form",
           ])}}
           {{ Form::input("hidden", "unique_user_id", $value->id) }}
-          {{ Form::input("button", "", "削除", [
+          {{ Form::input("button", "delete-button", "削除", [
               "class" => "btn btn-danger delete-button",
           ])}}
           {{ Form :: close()}}
