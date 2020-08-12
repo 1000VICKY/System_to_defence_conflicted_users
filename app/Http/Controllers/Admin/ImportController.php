@@ -38,12 +38,17 @@ class ImportController extends Controller
     public function upload(ImportRequest $request, Response $response)
     {
         try {
+            // windowsでfgetcsvを使う場合 ロケールの設定が必要
+            setlocale(LC_ALL, 'Japanese_Japan.65001');
+
             // トランザクションを実行
             DB::beginTransaction();
             $imported_data = [];
             $input = $request->all();
             // ファイルオブジェクトからイテレータを取得
             $uploaded_file = $input["csv_file"]->openFile();
+            $temp_file = new \SplTempFileObject(4 * 1024 * 100);
+
             // アップロードされた、CSVファイルからヘッダーのみを取得する
             $temp = explode(",", mb_convert_encoding($uploaded_file->current(), "UTF-8", "CP932"));
             $csv_header_array = [];
@@ -57,6 +62,7 @@ class ImportController extends Controller
             //print_r($csv_header_array);
             //print_r(array_intersect($regulation_header, $csv_header_array));
             if (array_intersect($regulation_header, $csv_header_array) !== $regulation_header) {
+                logger()->error($csv_header_array);
                 throw new \RuntimeException("CSVの見出しが正しく設定されていません。");
             }
 
@@ -79,7 +85,13 @@ class ImportController extends Controller
                 // イテレータをすすめる
                 $uploaded_file->next();
 
-                $value = explode(",", mb_convert_encoding($value, "UTF-8", "CP932"));
+                // CSVの正しい分割のために、文字コード変更する
+                $converted_value = mb_convert_encoding($value, "UTF-8", "CP932");
+                $temp_file->fwrite($converted_value);
+                $temp_file->rewind();
+                $value = $temp_file->fgetcsv();
+                $temp_file->ftruncate(0);
+
                 if (array_intersect_key($headers, $value) !== $headers) {
                     continue;
                 }
@@ -237,12 +249,14 @@ class ImportController extends Controller
             // ファイルアップロード画面へリダイレクト
             // return redirect()->action("Admin\ImportController@index");
         } catch(\RuntimeException $e) {
+            logger()->error($e);
             // RuntimeExceptionはDBロジックの外で実行させる
             // エラーページを表示させる
             return view("errors.index", [
                 "error" => $e,
             ]);
         } catch(\Exception $e) {
+            logger()->error($e);
             DB::rollback();
             // エラーページを表示させる
             return view("errors.index", [

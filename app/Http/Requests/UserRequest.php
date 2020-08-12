@@ -160,6 +160,7 @@ class UserRequest extends FormRequest
             "reception_number.required" => ":attributeは必須項目です。",
             "job.required" => ":attributeは必須項目です。",
             "gender.required" => ":attributeは必須項目です。",
+            "unique_user_id"=> ":attributeは必須項目です。",
         ];
     }
 
@@ -178,6 +179,7 @@ class UserRequest extends FormRequest
             "reception_number" => "CSV番号",
             "job" => "職業",
             "gender" => "性別",
+            "unique_user_id" => "マスター会員ID",
         ];
     }
 

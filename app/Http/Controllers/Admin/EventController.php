@@ -83,6 +83,7 @@ class EventController extends Controller
      * @param Request $request
      * @param Response $response
      * @param integer $event_id
+     * @param integer $unique_user_id
      * @return void
      */
     public function detail (Request $request, Response $response, int $event_id, int $unique_user_id = 0)
@@ -182,7 +183,13 @@ class EventController extends Controller
                 "unique_user_id" => $unique_user_id,
                 "unique_user_info" => $unique_user_info,
             ]);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            logger()->error($e);
+            return view("errors.index", [
+                "error" => new \RuntimeException("指定したユーザーの詳細情報の取得に失敗しました。"),
+            ]);
         } catch (\Exception $e) {
+            logger()->error($e);
             return view("errors.index", [
                 "error" => $e,
             ]);
